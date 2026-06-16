@@ -1,22 +1,28 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: 聆櫻聖境點歌系統 API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: songs
+    description: Song database operations
+  - name: queue
+    description: Song queue operations
+  - name: categories
+    description: Category management
+  - name: settings
+    description: Admin settings
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +30,341 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /songs:
+    get:
+      operationId: listSongs
+      tags: [songs]
+      summary: List all songs with optional filters
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: language
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of songs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongList"
+    post:
+      operationId: createSong
+      tags: [songs]
+      summary: Create a new song
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SongInput"
+      responses:
+        "201":
+          description: Song created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+
+  /songs/{id}:
+    get:
+      operationId: getSong
+      tags: [songs]
+      summary: Get a song by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Song detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+    patch:
+      operationId: updateSong
+      tags: [songs]
+      summary: Update a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SongUpdate"
+      responses:
+        "200":
+          description: Song updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+    delete:
+      operationId: deleteSong
+      tags: [songs]
+      summary: Delete a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Song deleted
+
+  /songs/import/google-sheet:
+    post:
+      operationId: importFromGoogleSheet
+      tags: [songs]
+      summary: Import songs from Google Sheet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleSheetImport"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
+
+  /queue:
+    get:
+      operationId: listQueue
+      tags: [queue]
+      summary: Get current queue
+      responses:
+        "200":
+          description: Queue list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueList"
+    post:
+      operationId: addToQueue
+      tags: [queue]
+      summary: Add a song to the queue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QueueItemInput"
+      responses:
+        "201":
+          description: Added to queue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueItem"
+
+  /queue/{id}:
+    delete:
+      operationId: removeFromQueue
+      tags: [queue]
+      summary: Remove an item from the queue
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed from queue
+
+  /queue/{id}/complete:
+    patch:
+      operationId: completeQueueItem
+      tags: [queue]
+      summary: Mark a queue item as completed (move to played)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Queue item completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueItem"
+
+  /queue/reorder:
+    patch:
+      operationId: reorderQueue
+      tags: [queue]
+      summary: Reorder the queue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QueueReorder"
+      responses:
+        "200":
+          description: Queue reordered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueList"
+
+  /queue/current:
+    get:
+      operationId: getCurrentPlaying
+      tags: [queue]
+      summary: Get currently playing and next song for OBS
+      responses:
+        "200":
+          description: Current playing info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentPlaying"
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: Categories list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryList"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdate"
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Category deleted
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get site settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update site settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdate"
+      responses:
+        "200":
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [songs]
+      summary: Get song statistics overview
+      responses:
+        "200":
+          description: Stats overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +372,256 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    Song:
+      type: object
+      required: [id, title, artist, language, playCount, categories, youtubeUrl, isPracticing, hasPitchWarning, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        artist:
+          type: string
+        language:
+          type: string
+        playCount:
+          type: integer
+        categories:
+          type: array
+          items:
+            type: string
+        youtubeUrl:
+          type: ["string", "null"]
+        isPracticing:
+          type: boolean
+        hasPitchWarning:
+          type: boolean
+        createdAt:
+          type: string
+
+    SongInput:
+      type: object
+      required: [title, artist, language]
+      properties:
+        title:
+          type: string
+        artist:
+          type: string
+        language:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        youtubeUrl:
+          type: ["string", "null"]
+        isPracticing:
+          type: boolean
+        hasPitchWarning:
+          type: boolean
+
+    SongUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        artist:
+          type: string
+        language:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        youtubeUrl:
+          type: ["string", "null"]
+        isPracticing:
+          type: boolean
+        hasPitchWarning:
+          type: boolean
+
+    SongList:
+      type: object
+      required: [songs, total, page, limit]
+      properties:
+        songs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    QueueItem:
+      type: object
+      required: [id, songId, requesterName, position, status, createdAt]
+      properties:
+        id:
+          type: integer
+        songId:
+          type: integer
+        song:
+          $ref: "#/components/schemas/Song"
+        requesterName:
+          type: string
+        note:
+          type: ["string", "null"]
+        position:
+          type: integer
+        status:
+          type: string
+          enum: [waiting, playing, completed, skipped]
+        createdAt:
+          type: string
+
+    QueueItemInput:
+      type: object
+      required: [songId, requesterName]
+      properties:
+        songId:
+          type: integer
+        requesterName:
+          type: string
+        note:
+          type: ["string", "null"]
+
+    QueueList:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/QueueItem"
+        total:
+          type: integer
+
+    QueueReorder:
+      type: object
+      required: [orderedIds]
+      properties:
+        orderedIds:
+          type: array
+          items:
+            type: integer
+
+    CurrentPlaying:
+      type: object
+      properties:
+        current:
+          $ref: "#/components/schemas/QueueItem"
+        next:
+          $ref: "#/components/schemas/QueueItem"
+
+    Category:
+      type: object
+      required: [id, name, type, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [language, theme, season, custom]
+        createdAt:
+          type: string
+
+    CategoryInput:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [language, theme, season, custom]
+
+    CategoryUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [language, theme, season, custom]
+
+    CategoryList:
+      type: object
+      required: [categories]
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+
+    Settings:
+      type: object
+      required: [bannerImageUrl, siteName]
+      properties:
+        bannerImageUrl:
+          type: ["string", "null"]
+        siteName:
+          type: string
+        bannerText:
+          type: ["string", "null"]
+
+    SettingsUpdate:
+      type: object
+      properties:
+        bannerImageUrl:
+          type: ["string", "null"]
+        siteName:
+          type: string
+        bannerText:
+          type: ["string", "null"]
+
+    Stats:
+      type: object
+      required: [totalSongs, totalPlayed, topSongs, languageBreakdown]
+      properties:
+        totalSongs:
+          type: integer
+        totalPlayed:
+          type: integer
+        topSongs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+        languageBreakdown:
+          type: array
+          items:
+            type: object
+            required: [language, count]
+            properties:
+              language:
+                type: string
+              count:
+                type: integer
+
+    GoogleSheetImport:
+      type: object
+      required: [sheetUrl]
+      properties:
+        sheetUrl:
+          type: string
+        sheetName:
+          type: ["string", "null"]
+
+    ImportResult:
+      type: object
+      required: [imported, skipped, errors]
+      properties:
+        imported:
+          type: integer
+        skipped:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string

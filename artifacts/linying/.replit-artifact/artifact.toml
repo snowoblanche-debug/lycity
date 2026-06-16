@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "聆櫻聖境的點歌旋律"
+version = "1.0.0"
+id = "artifacts/linying"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18514
+
+[services.development]
+run = "pnpm --filter @workspace/linying run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/linying", "run", "build" ]
+publicDir = "artifacts/linying/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18514"
+BASE_PATH = "/"
