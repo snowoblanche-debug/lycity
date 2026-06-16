@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { Save, ExternalLink } from "lucide-react";
 
 export default function AdminSettings() {
   const queryClient = useQueryClient();
@@ -16,7 +16,7 @@ export default function AdminSettings() {
 
   const [formData, setFormData] = useState({
     siteName: "",
-    bannerText: "",
+    siteSubtitle: "",
     bannerImageUrl: ""
   });
 
@@ -24,17 +24,17 @@ export default function AdminSettings() {
     if (settings) {
       setFormData({
         siteName: settings.siteName || "",
-        bannerText: settings.bannerText || "",
+        siteSubtitle: (settings as { siteSubtitle?: string | null }).siteSubtitle || "",
         bannerImageUrl: settings.bannerImageUrl || ""
       });
     }
   }, [settings]);
 
   const handleSave = () => {
-    updateSettings.mutate({ 
+    updateSettings.mutate({
       data: {
         siteName: formData.siteName || undefined,
-        bannerText: formData.bannerText || null,
+        siteSubtitle: formData.siteSubtitle || null,
         bannerImageUrl: formData.bannerImageUrl || null
       }
     }, {
@@ -47,83 +47,112 @@ export default function AdminSettings() {
 
   return (
     <AdminLayout>
-      <div className="flex flex-col gap-6 max-w-3xl">
+      <div className="flex flex-col gap-6 max-w-2xl">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-1">系統設定</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">系統設定</h1>
           <p className="text-muted-foreground text-sm">自訂你的點歌頁面外觀與文字。</p>
         </div>
 
-        <Card className="bg-card/40 backdrop-blur-sm border-white/10 mt-4">
-          <CardHeader>
-            <CardTitle className="text-lg">基本外觀</CardTitle>
-            <CardDescription>這些設定會直接影響首頁的顯示。</CardDescription>
+        <Card className="border-border/60 shadow-sm">
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle className="text-base font-semibold">頁面文字</CardTitle>
+            <CardDescription>網站名稱與首頁橫幅顯示的文字內容。</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="px-6 pb-6 space-y-5">
             {isLoading ? (
-              <div className="py-8 text-center text-muted-foreground">載入中...</div>
+              <div className="py-8 text-center text-muted-foreground text-sm">載入中...</div>
             ) : (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="siteName">網站名稱</Label>
-                  <Input 
-                    id="siteName" 
-                    value={formData.siteName} 
-                    onChange={e => setFormData({...formData, siteName: e.target.value})} 
-                    className="bg-black/20 border-white/10 max-w-md"
-                    placeholder="聆櫻聖境"
+                <div className="space-y-1.5">
+                  <Label htmlFor="siteName" className="text-sm font-medium">網站名稱</Label>
+                  <Input
+                    id="siteName"
+                    value={formData.siteName}
+                    onChange={e => setFormData({ ...formData, siteName: e.target.value })}
+                    placeholder="聆櫻聖境的點歌旋律"
                   />
-                  <p className="text-xs text-muted-foreground">顯示在左上角與網頁標題</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="bannerText">橫幅文字</Label>
-                  <Input 
-                    id="bannerText" 
-                    value={formData.bannerText} 
-                    onChange={e => setFormData({...formData, bannerText: e.target.value})} 
-                    className="bg-black/20 border-white/10 max-w-md"
-                    placeholder="歡迎來到聆櫻聖境"
-                  />
-                  <p className="text-xs text-muted-foreground">顯示在首頁上方橫幅正中央</p>
+                  <p className="text-xs text-muted-foreground">顯示在左上角與瀏覽器標籤</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bannerImage">橫幅背景圖片 URL</Label>
-                  <Input 
-                    id="bannerImage" 
-                    value={formData.bannerImageUrl} 
-                    onChange={e => setFormData({...formData, bannerImageUrl: e.target.value})} 
-                    className="bg-black/20 border-white/10"
-                    placeholder="https://..."
+                <div className="space-y-1.5">
+                  <Label htmlFor="siteSubtitle" className="text-sm font-medium">橫幅副標題</Label>
+                  <Input
+                    id="siteSubtitle"
+                    value={formData.siteSubtitle}
+                    onChange={e => setFormData({ ...formData, siteSubtitle: e.target.value })}
+                    placeholder="點播喜歡的歌曲，一起留下今晚的旋律"
                   />
-                  <p className="text-xs text-muted-foreground">建議使用 1920x400 以上的深色背景圖片，若留空則使用預設漸層背景</p>
-                </div>
-
-                {formData.bannerImageUrl && (
-                  <div className="mt-4 border border-white/10 rounded-lg overflow-hidden h-32 relative bg-black/40">
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${formData.bannerImageUrl})` }}
-                    />
-                    <div className="absolute inset-0 bg-black/40" />
-                    <div className="relative h-full flex items-center justify-center">
-                      <span className="text-xl font-bold text-white tracking-widest drop-shadow-lg">
-                        {formData.bannerText || formData.siteName || "聆櫻聖境"}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t border-white/5 flex justify-end">
-                  <Button onClick={handleSave} disabled={updateSettings.isPending} data-testid="btn-save-settings">
-                    <Save className="w-4 h-4 mr-2" />
-                    {updateSettings.isPending ? "儲存中..." : "儲存設定"}
-                  </Button>
+                  <p className="text-xs text-muted-foreground">顯示在首頁橫幅的網站名稱下方</p>
                 </div>
               </>
             )}
           </CardContent>
         </Card>
+
+        <Card className="border-border/60 shadow-sm">
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle className="text-base font-semibold">橫幅背景圖片</CardTitle>
+            <CardDescription>上傳圖片至 Discord 後貼上圖片連結，建議尺寸 1920×400 以上。</CardDescription>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 space-y-5">
+            {isLoading ? null : (
+              <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="bannerImage" className="text-sm font-medium">圖片 URL</Label>
+                  <Input
+                    id="bannerImage"
+                    value={formData.bannerImageUrl}
+                    onChange={e => setFormData({ ...formData, bannerImageUrl: e.target.value })}
+                    placeholder="https://cdn.discordapp.com/..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    若留空則使用預設漸層背景。在 Discord 上傳圖片後，右鍵點擊圖片 → 複製連結。
+                  </p>
+                </div>
+
+                {formData.bannerImageUrl && (
+                  <div className="rounded-xl overflow-hidden border border-border/60 h-36 relative shadow-sm">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${formData.bannerImageUrl})` }}
+                    />
+                    <div className="absolute inset-0" style={{ background: "rgba(36,52,71,0.38)" }} />
+                    <div className="relative h-full flex flex-col items-center justify-center gap-1">
+                      <span className="text-lg font-bold text-white tracking-widest drop-shadow-lg">
+                        {formData.siteName || "聆櫻聖境的點歌旋律"}
+                      </span>
+                      {formData.siteSubtitle && (
+                        <span className="text-xs text-white/80 tracking-wider">
+                          {formData.siteSubtitle}
+                        </span>
+                      )}
+                    </div>
+                    <a
+                      href={formData.bannerImageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="absolute top-2 right-2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-md transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end pt-1">
+          <Button
+            onClick={handleSave}
+            disabled={updateSettings.isPending || isLoading}
+            className="px-6"
+            data-testid="btn-save-settings"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {updateSettings.isPending ? "儲存中..." : "儲存設定"}
+          </Button>
+        </div>
       </div>
     </AdminLayout>
   );

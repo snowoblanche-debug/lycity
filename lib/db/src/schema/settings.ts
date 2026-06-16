@@ -6,6 +6,7 @@ export const settingsTable = pgTable("settings", {
   id: serial("id").primaryKey(),
   bannerImageUrl: text("banner_image_url"),
   siteName: text("site_name").notNull().default("聆櫻聖境的點歌旋律"),
+  siteSubtitle: text("site_subtitle"),
   bannerText: text("banner_text"),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

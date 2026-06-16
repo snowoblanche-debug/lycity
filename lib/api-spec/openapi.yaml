@@ -568,6 +568,8 @@ components:
           type: ["string", "null"]
         siteName:
           type: string
+        siteSubtitle:
+          type: ["string", "null"]
         bannerText:
           type: ["string", "null"]
 
@@ -578,6 +580,8 @@ components:
           type: ["string", "null"]
         siteName:
           type: string
+        siteSubtitle:
+          type: ["string", "null"]
         bannerText:
           type: ["string", "null"]
 

@@ -1,30 +1,32 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { useGetSettings } from "@workspace/api-client-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { data: settings } = useGetSettings();
-  
+
   return (
-    <div className="min-h-screen w-full bg-background text-foreground flex flex-col relative overflow-hidden">
-      {/* Background Gradient */}
-      <div className="fixed inset-0 z-0 bg-gradient-to-br from-background via-[#1a2235] to-background opacity-80 pointer-events-none" />
-      
-      {/* Header/Nav */}
-      <header className="relative z-10 w-full backdrop-blur-md bg-card/60 border-b border-white/5 py-4 px-6 flex items-center justify-between">
+    <div className="min-h-screen w-full bg-background text-foreground flex flex-col">
+      {/* Subtle background texture */}
+      <div className="fixed inset-0 z-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 60% 0%, rgba(112,136,163,0.10) 0%, transparent 70%), radial-gradient(ellipse at 10% 80%, rgba(142,163,185,0.08) 0%, transparent 60%)" }}
+      />
+
+      {/* Header */}
+      <header className="relative z-10 w-full backdrop-blur-md border-b border-border/60 py-3.5 px-6 flex items-center justify-between"
+        style={{ background: "rgba(255,255,255,0.80)" }}>
         <Link href="/">
-          <div className="flex items-center gap-3 cursor-pointer">
-            <h1 className="text-xl font-bold tracking-wider text-primary-foreground drop-shadow-md">
+          <div className="flex items-center gap-2 cursor-pointer">
+            <span className="text-lg font-semibold tracking-wide text-foreground">
               {settings?.siteName || "聆櫻聖境"}
-            </h1>
+            </span>
           </div>
         </Link>
         <nav className="flex items-center gap-6">
           <Link href="/">
-            <span className="text-sm font-medium hover:text-primary transition-colors cursor-pointer">首頁</span>
+            <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">首頁</span>
           </Link>
           <Link href="/admin">
-            <span className="text-sm font-medium hover:text-primary transition-colors cursor-pointer">管理後台</span>
+            <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">管理後台</span>
           </Link>
         </nav>
       </header>

@@ -10,6 +10,7 @@ async function getOrCreateSettings() {
   if (rows.length > 0) return rows[0];
   const [settings] = await db.insert(settingsTable).values({
     siteName: "聆櫻聖境的點歌旋律",
+    siteSubtitle: "點播喜歡的歌曲，一起留下今晚的旋律",
     bannerImageUrl: null,
     bannerText: null,
   }).returning();
@@ -21,6 +22,7 @@ router.get("/settings", async (_req, res): Promise<void> => {
   res.json({
     bannerImageUrl: settings.bannerImageUrl,
     siteName: settings.siteName,
+    siteSubtitle: settings.siteSubtitle,
     bannerText: settings.bannerText,
   });
 });
@@ -37,6 +39,7 @@ router.patch("/settings", async (req, res): Promise<void> => {
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
   if (parsed.data.bannerImageUrl !== undefined) updateData.bannerImageUrl = parsed.data.bannerImageUrl;
   if (parsed.data.siteName !== undefined) updateData.siteName = parsed.data.siteName;
+  if (parsed.data.siteSubtitle !== undefined) updateData.siteSubtitle = parsed.data.siteSubtitle;
   if (parsed.data.bannerText !== undefined) updateData.bannerText = parsed.data.bannerText;
 
   const [updated] = await db.update(settingsTable)
@@ -49,6 +52,7 @@ router.patch("/settings", async (req, res): Promise<void> => {
   res.json({
     bannerImageUrl: result.bannerImageUrl,
     siteName: result.siteName,
+    siteSubtitle: result.siteSubtitle,
     bannerText: result.bannerText,
   });
 });

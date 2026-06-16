@@ -11,5 +11,7 @@ export interface Settings {
   bannerImageUrl: string | null;
   siteName: string;
   /** @nullable */
+  siteSubtitle?: string | null;
+  /** @nullable */
   bannerText?: string | null;
 }

@@ -353,6 +353,7 @@ export const DeleteCategoryParams = zod.object({
 export const GetSettingsResponse = zod.object({
   "bannerImageUrl": zod.string().nullable(),
   "siteName": zod.string(),
+  "siteSubtitle": zod.string().nullish(),
   "bannerText": zod.string().nullish()
 })
 
@@ -363,12 +364,14 @@ export const GetSettingsResponse = zod.object({
 export const UpdateSettingsBody = zod.object({
   "bannerImageUrl": zod.string().nullish(),
   "siteName": zod.string().optional(),
+  "siteSubtitle": zod.string().nullish(),
   "bannerText": zod.string().nullish()
 })
 
 export const UpdateSettingsResponse = zod.object({
   "bannerImageUrl": zod.string().nullable(),
   "siteName": zod.string(),
+  "siteSubtitle": zod.string().nullish(),
   "bannerText": zod.string().nullish()
 })
 

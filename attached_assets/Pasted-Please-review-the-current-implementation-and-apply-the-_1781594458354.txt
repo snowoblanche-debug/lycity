@@ -1,0 +1,210 @@
+Please review the current implementation and apply the following changes before adding WebSocket or Twitch integration.
+
+# UI Improvements
+
+The current UI has poor contrast and readability.
+
+Please redesign the color system:
+
+Background:
+#F5F7FA
+
+Primary:
+#7088A3
+
+Secondary:
+#8EA3B9
+
+Text:
+#243447
+
+Subtext:
+#5C6B7A
+
+Cards:
+rgba(255,255,255,0.72)
+
+Use glassmorphism cards with stronger contrast.
+
+The current #CFE0EF-based design is too gray and difficult to read.
+
+Layout:
+
+* Song Library = 75%
+* Queue Panel = 25%
+
+Reduce the width of the queue panel.
+
+Website Title:
+
+聆櫻聖境的點歌旋律
+
+Subtitle:
+
+點播喜歡的歌曲，一起留下今晚的旋律
+
+Remove:
+
+歡迎來到聆櫻的點歌系統！
+
+# Banner
+
+Banner image should be loaded dynamically from a URL stored in settings.
+
+Admin page should allow:
+
+* Banner Image URL
+* Site Title
+* Site Subtitle
+
+I want to upload images to Discord and paste the image URL.
+
+# Song Data Structure
+
+Please use:
+
+title
+artist
+language
+tags
+status
+sing_count
+youtube_url
+
+Status values:
+
+已解鎖
+🐣修煉中
+
+Tags examples:
+
+#抒情
+#動漫
+#EMO
+#季節
+#RAP
+#外文
+#派對
+#破音警告
+
+Support multiple tags.
+
+# Song Cards
+
+Display:
+
+Song Title
+Artist
+Language
+Tags
+Status
+Sing Count
+
+Examples:
+
+🐣 修煉中
+
+⚠️ 破音警告
+
+🎵 演唱 12 次
+
+# Queue System
+
+Add "Now Playing" functionality.
+
+Requirements:
+
+* Only one song can be playing at a time.
+* Admin can click "Now Playing".
+* OBS page should display the current song.
+* Next song should be displayed automatically.
+
+# Song Completion Workflow
+
+When admin clicks "Complete Song":
+
+* Increase sing_count by 1
+* Save record into song_history
+* Remove from queue
+* Promote next song
+
+# Song History
+
+Create song_history table:
+
+id
+song_id
+song_title
+artist
+requester
+performed_at
+vod_url
+timestamp_text
+
+Purpose:
+
+Future archive system.
+
+Example:
+
+2025-04-20
+
+21:04 Lemon
+
+Requester:
+Jason
+
+VOD Timestamp:
+01:34:22
+
+# Google Sheet Integration
+
+Please explain how Google Sheet import currently works.
+
+I need answers:
+
+1. Is it CSV upload only?
+2. Does it support public Google Sheet URL?
+3. Does it sync data into Supabase?
+4. If I modify the Google Sheet later, how do I refresh songs?
+5. Is there a Sync Songs button in admin?
+
+I want:
+
+Google Sheet
+↓
+Sync Songs button
+↓
+Update Supabase songs table
+
+No Google OAuth needed in V1.
+
+# OBS Page
+
+Keep transparent background.
+
+Display:
+
+Current Song
+Artist
+Requester
+
+Next Song
+Artist
+Requester
+
+Update automatically.
+
+# Future Compatibility
+
+Please make database schema compatible with future features:
+
+* Twitch loyalty points
+* Song request history
+* VOD archive
+* Popular song ranking
+* YouTube auto song import
+
+Do not implement these yet.
+
+Only prepare database structure for future expansion.
