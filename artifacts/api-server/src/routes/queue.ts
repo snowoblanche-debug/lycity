@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, asc, sql, ne } from "drizzle-orm";
+import { eq, asc, sql, inArray } from "drizzle-orm";
 import { db, queueTable, songsTable, songHistoryTable } from "@workspace/db";
 import {
   AddToQueueBody,
@@ -23,6 +23,7 @@ const songSelect = {
   createdAt: songsTable.createdAt,
 };
 
+// Only show active (waiting/playing) items — excludes completed and skipped
 async function getActiveQueueWithSongs() {
   return db
     .select({
@@ -37,7 +38,7 @@ async function getActiveQueueWithSongs() {
     })
     .from(queueTable)
     .leftJoin(songsTable, eq(queueTable.songId, songsTable.id))
-    .where(ne(queueTable.status, "completed"))
+    .where(inArray(queueTable.status, ["waiting", "playing"]))
     .orderBy(asc(queueTable.position), asc(queueTable.createdAt));
 }
 
@@ -50,26 +51,18 @@ router.get("/queue", async (_req, res): Promise<void> => {
 
 router.post("/queue", async (req, res): Promise<void> => {
   const parsed = AddToQueueBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
   const [song] = await db.select().from(songsTable).where(eq(songsTable.id, parsed.data.songId));
-  if (!song) {
-    res.status(404).json({ error: "Song not found" });
-    return;
-  }
+  if (!song) { res.status(404).json({ error: "Song not found" }); return; }
 
   const existing = await db
     .select({ position: queueTable.position })
     .from(queueTable)
-    .where(ne(queueTable.status, "completed"))
+    .where(inArray(queueTable.status, ["waiting", "playing"]))
     .orderBy(asc(queueTable.position));
 
-  const maxPosition = existing.length > 0
-    ? Math.max(...existing.map(e => e.position)) + 1
-    : 0;
+  const maxPosition = existing.length > 0 ? Math.max(...existing.map(e => e.position)) + 1 : 0;
 
   const [item] = await db.insert(queueTable).values({
     songId: parsed.data.songId,
@@ -84,14 +77,9 @@ router.post("/queue", async (req, res): Promise<void> => {
 
 router.patch("/queue/reorder", async (req, res): Promise<void> => {
   const parsed = ReorderQueueBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   for (let i = 0; i < parsed.data.orderedIds.length; i++) {
-    await db.update(queueTable)
-      .set({ position: i })
-      .where(eq(queueTable.id, parsed.data.orderedIds[i]));
+    await db.update(queueTable).set({ position: i }).where(eq(queueTable.id, parsed.data.orderedIds[i]));
   }
   const items = await getActiveQueueWithSongs();
   res.json({ items, total: items.length });
@@ -123,36 +111,43 @@ router.get("/queue/current", async (_req, res): Promise<void> => {
 router.delete("/queue/:id", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = RemoveFromQueueParams.safeParse({ id: parseInt(raw, 10) });
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [item] = await db.delete(queueTable).where(eq(queueTable.id, parsed.data.id)).returning();
-  if (!item) {
-    res.status(404).json({ error: "Queue item not found" });
-    return;
-  }
+  if (!item) { res.status(404).json({ error: "Queue item not found" }); return; }
   res.sendStatus(204);
 });
 
 router.patch("/queue/:id/play", async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  await db.update(queueTable).set({ status: "waiting" }).where(eq(queueTable.status, "playing"));
+  const [item] = await db.update(queueTable).set({ status: "playing" }).where(eq(queueTable.id, id)).returning();
+  if (!item) { res.status(404).json({ error: "Queue item not found" }); return; }
+  const [song] = await db.select().from(songsTable).where(eq(songsTable.id, item.songId));
+  res.json({ ...item, song: song ?? null });
+});
 
-  // Un-play any currently playing item back to waiting
-  await db.update(queueTable)
-    .set({ status: "waiting" })
-    .where(eq(queueTable.status, "playing"));
+router.patch("/queue/:id/skip", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const [item] = await db.update(queueTable)
-    .set({ status: "playing" })
+    .set({ status: "skipped" })
     .where(eq(queueTable.id, id))
     .returning();
 
   if (!item) { res.status(404).json({ error: "Queue item not found" }); return; }
 
-  const [song] = await db.select().from(songsTable).where(eq(songsTable.id, item.songId));
-  res.json({ ...item, song: song ?? null });
+  // Auto-promote next waiting song (no history, no play count)
+  const [nextWaiting] = await db.select().from(queueTable)
+    .where(eq(queueTable.status, "waiting"))
+    .orderBy(asc(queueTable.position), asc(queueTable.createdAt))
+    .limit(1);
+  if (nextWaiting) {
+    await db.update(queueTable).set({ status: "playing" }).where(eq(queueTable.id, nextWaiting.id));
+  }
+
+  res.json(item);
 });
 
 router.patch("/queue/:id/complete", async (req, res): Promise<void> => {
@@ -160,17 +155,11 @@ router.patch("/queue/:id/complete", async (req, res): Promise<void> => {
   const parsed = CompleteQueueItemParams.safeParse({ id: parseInt(raw, 10) });
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
-  // Fetch with song info
   const [queueEntry] = await db
     .select({
-      id: queueTable.id,
-      songId: queueTable.songId,
-      requesterName: queueTable.requesterName,
-      note: queueTable.note,
-      position: queueTable.position,
-      status: queueTable.status,
-      createdAt: queueTable.createdAt,
-      song: songSelect,
+      id: queueTable.id, songId: queueTable.songId, requesterName: queueTable.requesterName,
+      note: queueTable.note, position: queueTable.position, status: queueTable.status,
+      createdAt: queueTable.createdAt, song: songSelect,
     })
     .from(queueTable)
     .leftJoin(songsTable, eq(queueTable.songId, songsTable.id))
@@ -178,18 +167,15 @@ router.patch("/queue/:id/complete", async (req, res): Promise<void> => {
 
   if (!queueEntry) { res.status(404).json({ error: "Queue item not found" }); return; }
 
-  // 1. Mark completed
   const [completedItem] = await db.update(queueTable)
     .set({ status: "completed" })
     .where(eq(queueTable.id, parsed.data.id))
     .returning();
 
-  // 2. Increment play count on the song
   await db.update(songsTable)
     .set({ playCount: sql`${songsTable.playCount} + 1` })
     .where(eq(songsTable.id, queueEntry.songId));
 
-  // 3. Create song history record
   await db.insert(songHistoryTable).values({
     songId: queueEntry.songId,
     songTitle: queueEntry.song?.title ?? "未知歌曲",
@@ -202,18 +188,12 @@ router.patch("/queue/:id/complete", async (req, res): Promise<void> => {
     performedAt: new Date(),
   });
 
-  // 4. Auto-promote next waiting song to playing
-  const [nextWaiting] = await db
-    .select()
-    .from(queueTable)
+  const [nextWaiting] = await db.select().from(queueTable)
     .where(eq(queueTable.status, "waiting"))
     .orderBy(asc(queueTable.position), asc(queueTable.createdAt))
     .limit(1);
-
   if (nextWaiting) {
-    await db.update(queueTable)
-      .set({ status: "playing" })
-      .where(eq(queueTable.id, nextWaiting.id));
+    await db.update(queueTable).set({ status: "playing" }).where(eq(queueTable.id, nextWaiting.id));
   }
 
   res.json(completedItem);

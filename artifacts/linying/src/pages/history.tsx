@@ -29,7 +29,6 @@ export default function HistoryPage() {
     return () => clearInterval(interval);
   }, [queryClient]);
 
-  // Group by date (newest first)
   const grouped = useMemo(() => {
     if (!data?.items) return [];
     const map = new Map<string, typeof data.items>();
@@ -47,81 +46,78 @@ export default function HistoryPage() {
       <div className="border-b border-border/50 px-6 md:px-10 py-8"
         style={{ background: "rgba(255,255,255,0.60)", backdropFilter: "blur(8px)" }}>
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+          <div className="flex items-center gap-2 text-[#6B7280] text-sm mb-1">
             <Clock className="w-4 h-4" />
             <span>演唱紀錄</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">今晚的旋律</h1>
-          {data && (
-            <p className="text-sm text-muted-foreground mt-1">共 {data.total} 首演唱紀錄</p>
-          )}
+          <h1 className="text-2xl font-bold text-[#243447] tracking-tight">今晚的旋律</h1>
+          {data && <p className="text-sm text-[#6B7280] mt-1">共 {data.total} 首演唱紀錄</p>}
         </div>
       </div>
 
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 md:px-10 py-8">
         {isLoading ? (
-          <div className="py-20 text-center text-muted-foreground text-sm">載入中...</div>
+          <div className="py-20 text-center text-[#6B7280] text-sm">載入中...</div>
         ) : grouped.length === 0 ? (
           <div className="py-20 text-center rounded-2xl"
             style={{ background: "rgba(255,255,255,0.60)", border: "1px solid rgba(112,136,163,0.16)" }}>
-            <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-            <p className="text-muted-foreground font-medium">尚無演唱紀錄</p>
-            <p className="text-sm text-muted-foreground/70 mt-1">完唱第一首歌後，紀錄會顯示在這裡</p>
+            <Music className="h-12 w-12 mx-auto mb-4 text-[#6B7280]/30" />
+            <p className="text-[#4B5563] font-medium">尚無演唱紀錄</p>
+            <p className="text-sm text-[#6B7280] mt-1">完唱第一首歌後，紀錄會顯示在這裡</p>
           </div>
         ) : (
           <div className="flex flex-col gap-10">
             {grouped.map(([dateStr, items]) => (
               <div key={dateStr}>
-                {/* Date header */}
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="text-sm font-semibold text-foreground tracking-wide">
+                  <div className="text-sm font-semibold text-[#243447] tracking-wide">
                     {formatDate(items[0].performedAt)}
                   </div>
                   <div className="flex-1 h-px bg-border/60" />
-                  <span className="text-xs text-muted-foreground">{items.length} 首</span>
+                  <span className="text-xs text-[#6B7280]">{items.length} 首</span>
                 </div>
 
-                {/* Entries */}
                 <div className="flex flex-col gap-0 rounded-2xl overflow-hidden border border-border/50"
                   style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(10px)" }}>
                   {items.map((item, idx) => (
-                    <div
-                      key={item.id}
-                      className={`flex items-center gap-5 px-5 py-3.5 ${idx < items.length - 1 ? 'border-b border-border/40' : ''}`}
-                    >
+                    <div key={item.id}
+                      className={`flex items-start gap-5 px-5 py-4 ${idx < items.length - 1 ? 'border-b border-border/40' : ''}`}>
                       {/* Time */}
-                      <span className="text-xs font-mono text-muted-foreground/70 flex-shrink-0 w-10">
+                      <span className="text-xs font-mono text-[#6B7280] flex-shrink-0 w-10 pt-0.5">
                         {formatTime(item.performedAt)}
                       </span>
 
                       {/* Song info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-2 flex-wrap">
-                          <span className="font-semibold text-foreground text-sm">{item.songTitle}</span>
-                          <span className="text-xs text-muted-foreground">{item.artist}</span>
+                        <div className="flex items-baseline gap-2 flex-wrap mb-1">
+                          <span className="font-semibold text-[#243447] text-sm">{item.songTitle}</span>
+                          <span className="text-xs text-[#6B7280]">{item.artist}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           {item.language && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded text-muted-foreground"
+                            <span className="text-[10px] px-1.5 py-0.5 rounded text-[#6B7280] font-medium"
                               style={{ background: "rgba(112,136,163,0.10)" }}>
                               {item.language}
                             </span>
                           )}
+                          {(item.tags as string[])?.filter(Boolean).map(tag => (
+                            <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded text-[#4B5563]"
+                              style={{ background: "rgba(112,136,163,0.08)", border: "1px solid rgba(112,136,163,0.18)" }}>
+                              #{tag}
+                            </span>
+                          ))}
                         </div>
                       </div>
 
                       {/* Requester */}
                       <div className="text-right flex-shrink-0">
-                        <div className="text-xs text-muted-foreground">點歌人</div>
+                        <div className="text-[10px] text-[#6B7280]">點歌人</div>
                         <div className="text-sm font-medium text-primary">{item.requester}</div>
                       </div>
 
-                      {/* VOD link (future) */}
                       {item.vodUrl && (
-                        <a
-                          href={item.vodUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-primary underline flex-shrink-0"
-                        >
+                        <a href={item.vodUrl} target="_blank" rel="noreferrer"
+                          className="text-xs text-primary underline flex-shrink-0 pt-0.5">
                           {item.timestampText ?? "VOD"}
                         </a>
                       )}

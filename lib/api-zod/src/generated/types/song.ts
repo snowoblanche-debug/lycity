@@ -17,5 +17,6 @@ export interface Song {
   youtubeUrl: string | null;
   isPracticing: boolean;
   hasPitchWarning: boolean;
+  status?: string;
   createdAt: string;
 }

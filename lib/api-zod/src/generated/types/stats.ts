@@ -8,6 +8,7 @@
 import type { Song } from './song';
 import type { SongHistory } from './songHistory';
 import type { StatsLanguageBreakdownItem } from './statsLanguageBreakdownItem';
+import type { StatsMonthly } from './statsMonthly';
 
 export interface Stats {
   totalSongs: number;
@@ -16,4 +17,5 @@ export interface Stats {
   topSongs: Song[];
   languageBreakdown: StatsLanguageBreakdownItem[];
   recentPerformances: SongHistory[];
+  monthly?: StatsMonthly;
 }

@@ -10,6 +10,7 @@ export interface SongUpdate {
   title?: string;
   artist?: string;
   language?: string;
+  status?: string;
   categories?: string[];
   /** @nullable */
   youtubeUrl?: string | null;

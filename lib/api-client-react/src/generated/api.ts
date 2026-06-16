@@ -41,7 +41,8 @@ import type {
   SongInput,
   SongList,
   SongUpdate,
-  Stats
+  Stats,
+  SyncPreview
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -507,6 +508,77 @@ export const useDeleteSong = <TError = ErrorType<unknown>,
       return useMutation(getDeleteSongMutationOptions(options));
     }
 
+export const getPreviewGoogleSheetSyncUrl = () => {
+
+
+
+
+  return `/api/songs/import/google-sheet/preview`
+}
+
+/**
+ * @summary Preview what a Google Sheet sync would do
+ */
+export const previewGoogleSheetSync = async (googleSheetImport: GoogleSheetImport, options?: RequestInit): Promise<SyncPreview> => {
+
+  return customFetch<SyncPreview>(getPreviewGoogleSheetSyncUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      googleSheetImport,)
+  }
+);}
+
+
+
+
+export const getPreviewGoogleSheetSyncMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewGoogleSheetSync>>, TError,{data: BodyType<GoogleSheetImport>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof previewGoogleSheetSync>>, TError,{data: BodyType<GoogleSheetImport>}, TContext> => {
+
+const mutationKey = ['previewGoogleSheetSync'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof previewGoogleSheetSync>>, {data: BodyType<GoogleSheetImport>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  previewGoogleSheetSync(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PreviewGoogleSheetSyncMutationResult = NonNullable<Awaited<ReturnType<typeof previewGoogleSheetSync>>>
+    export type PreviewGoogleSheetSyncMutationBody = BodyType<GoogleSheetImport>
+    export type PreviewGoogleSheetSyncMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Preview what a Google Sheet sync would do
+ */
+export const usePreviewGoogleSheetSync = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewGoogleSheetSync>>, TError,{data: BodyType<GoogleSheetImport>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof previewGoogleSheetSync>>,
+        TError,
+        {data: BodyType<GoogleSheetImport>},
+        TContext
+      > => {
+      return useMutation(getPreviewGoogleSheetSyncMutationOptions(options));
+    }
+
 export const getImportFromGoogleSheetUrl = () => {
 
 
@@ -794,6 +866,76 @@ export const useRemoveFromQueue = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRemoveFromQueueMutationOptions(options));
+    }
+
+export const getSkipQueueItemUrl = (id: number,) => {
+
+
+
+
+  return `/api/queue/${id}/skip`
+}
+
+/**
+ * @summary Skip a queue item (no history, no play count)
+ */
+export const skipQueueItem = async (id: number, options?: RequestInit): Promise<QueueItem> => {
+
+  return customFetch<QueueItem>(getSkipQueueItemUrl(id),
+  {
+    ...options,
+    method: 'PATCH'
+
+
+  }
+);}
+
+
+
+
+export const getSkipQueueItemMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof skipQueueItem>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof skipQueueItem>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['skipQueueItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof skipQueueItem>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  skipQueueItem(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SkipQueueItemMutationResult = NonNullable<Awaited<ReturnType<typeof skipQueueItem>>>
+
+    export type SkipQueueItemMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Skip a queue item (no history, no play count)
+ */
+export const useSkipQueueItem = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof skipQueueItem>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof skipQueueItem>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getSkipQueueItemMutationOptions(options));
     }
 
 export const getCompleteQueueItemUrl = (id: number,) => {

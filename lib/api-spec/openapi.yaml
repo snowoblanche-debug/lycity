@@ -139,6 +139,25 @@ paths:
         "204":
           description: Song deleted
 
+  /songs/import/google-sheet/preview:
+    post:
+      operationId: previewGoogleSheetSync
+      tags: [songs]
+      summary: Preview what a Google Sheet sync would do
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleSheetImport"
+      responses:
+        "200":
+          description: Sync preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncPreview"
+
   /songs/import/google-sheet:
     post:
       operationId: importFromGoogleSheet
@@ -202,6 +221,25 @@ paths:
       responses:
         "204":
           description: Removed from queue
+
+  /queue/{id}/skip:
+    patch:
+      operationId: skipQueueItem
+      tags: [queue]
+      summary: Skip a queue item (no history, no play count)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Queue item skipped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueItem"
 
   /queue/{id}/complete:
     patch:
@@ -441,6 +479,8 @@ components:
           type: boolean
         hasPitchWarning:
           type: boolean
+        status:
+          type: string
         createdAt:
           type: string
 
@@ -453,6 +493,8 @@ components:
         artist:
           type: string
         language:
+          type: string
+        status:
           type: string
         categories:
           type: array
@@ -473,6 +515,8 @@ components:
         artist:
           type: string
         language:
+          type: string
+        status:
           type: string
         categories:
           type: array
@@ -698,6 +742,24 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SongHistory"
+        monthly:
+          type: object
+          required: [totalCompleted, newSongs, topLanguages]
+          properties:
+            totalCompleted:
+              type: integer
+            newSongs:
+              type: integer
+            topLanguages:
+              type: array
+              items:
+                type: object
+                required: [language, count]
+                properties:
+                  language:
+                    type: string
+                  count:
+                    type: integer
 
     GoogleSheetImport:
       type: object
@@ -708,11 +770,32 @@ components:
         sheetName:
           type: ["string", "null"]
 
+    SyncPreview:
+      type: object
+      required: [rowsDetected, newSongs, updatedSongs, skippedSongs]
+      properties:
+        rowsDetected:
+          type: integer
+        newSongs:
+          type: integer
+        updatedSongs:
+          type: integer
+        skippedSongs:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+
     ImportResult:
       type: object
-      required: [imported, skipped, errors]
+      required: [rowsDetected, imported, updated, skipped, errors]
       properties:
+        rowsDetected:
+          type: integer
         imported:
+          type: integer
+        updated:
           type: integer
         skipped:
           type: integer

@@ -20,6 +20,7 @@ export interface Song {
   youtubeUrl: string | null;
   isPracticing: boolean;
   hasPitchWarning: boolean;
+  status?: string;
   createdAt: string;
 }
 
@@ -27,6 +28,7 @@ export interface SongInput {
   title: string;
   artist: string;
   language: string;
+  status?: string;
   categories?: string[];
   /** @nullable */
   youtubeUrl?: string | null;
@@ -38,6 +40,7 @@ export interface SongUpdate {
   title?: string;
   artist?: string;
   language?: string;
+  status?: string;
   categories?: string[];
   /** @nullable */
   youtubeUrl?: string | null;
@@ -194,6 +197,17 @@ export type StatsLanguageBreakdownItem = {
   count: number;
 };
 
+export type StatsMonthlyTopLanguagesItem = {
+  language: string;
+  count: number;
+};
+
+export type StatsMonthly = {
+  totalCompleted: number;
+  newSongs: number;
+  topLanguages: StatsMonthlyTopLanguagesItem[];
+};
+
 export interface Stats {
   totalSongs: number;
   totalPlayed: number;
@@ -201,6 +215,7 @@ export interface Stats {
   topSongs: Song[];
   languageBreakdown: StatsLanguageBreakdownItem[];
   recentPerformances: SongHistory[];
+  monthly?: StatsMonthly;
 }
 
 export interface GoogleSheetImport {
@@ -209,8 +224,18 @@ export interface GoogleSheetImport {
   sheetName?: string | null;
 }
 
+export interface SyncPreview {
+  rowsDetected: number;
+  newSongs: number;
+  updatedSongs: number;
+  skippedSongs: number;
+  errors?: string[];
+}
+
 export interface ImportResult {
+  rowsDetected: number;
   imported: number;
+  updated: number;
   skipped: number;
   errors: string[];
 }

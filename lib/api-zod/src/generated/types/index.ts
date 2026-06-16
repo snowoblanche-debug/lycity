@@ -34,3 +34,6 @@ export * from './songList';
 export * from './songUpdate';
 export * from './stats';
 export * from './statsLanguageBreakdownItem';
+export * from './statsMonthly';
+export * from './statsMonthlyTopLanguagesItem';
+export * from './syncPreview';

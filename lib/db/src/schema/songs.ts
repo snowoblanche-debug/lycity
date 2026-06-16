@@ -10,6 +10,7 @@ export const songsTable = pgTable("songs", {
   playCount: integer("play_count").notNull().default(0),
   categories: jsonb("categories").$type<string[]>().notNull().default([]),
   youtubeUrl: text("youtube_url"),
+  status: text("status").notNull().default("已解鎖"),
   isPracticing: boolean("is_practicing").notNull().default(false),
   hasPitchWarning: boolean("has_pitch_warning").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),

@@ -41,6 +41,7 @@ export const ListSongsResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 })),
   "total": zod.number(),
@@ -56,6 +57,7 @@ export const CreateSongBody = zod.object({
   "title": zod.string(),
   "artist": zod.string(),
   "language": zod.string(),
+  "status": zod.string().optional(),
   "categories": zod.array(zod.string()).optional(),
   "youtubeUrl": zod.string().nullish(),
   "isPracticing": zod.boolean().optional(),
@@ -80,6 +82,7 @@ export const GetSongResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 })
 
@@ -95,6 +98,7 @@ export const UpdateSongBody = zod.object({
   "title": zod.string().optional(),
   "artist": zod.string().optional(),
   "language": zod.string().optional(),
+  "status": zod.string().optional(),
   "categories": zod.array(zod.string()).optional(),
   "youtubeUrl": zod.string().nullish(),
   "isPracticing": zod.boolean().optional(),
@@ -111,6 +115,7 @@ export const UpdateSongResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 })
 
@@ -124,6 +129,23 @@ export const DeleteSongParams = zod.object({
 
 
 /**
+ * @summary Preview what a Google Sheet sync would do
+ */
+export const PreviewGoogleSheetSyncBody = zod.object({
+  "sheetUrl": zod.string(),
+  "sheetName": zod.string().nullish()
+})
+
+export const PreviewGoogleSheetSyncResponse = zod.object({
+  "rowsDetected": zod.number(),
+  "newSongs": zod.number(),
+  "updatedSongs": zod.number(),
+  "skippedSongs": zod.number(),
+  "errors": zod.array(zod.string()).optional()
+})
+
+
+/**
  * @summary Import songs from Google Sheet
  */
 export const ImportFromGoogleSheetBody = zod.object({
@@ -132,7 +154,9 @@ export const ImportFromGoogleSheetBody = zod.object({
 })
 
 export const ImportFromGoogleSheetResponse = zod.object({
+  "rowsDetected": zod.number(),
   "imported": zod.number(),
+  "updated": zod.number(),
   "skipped": zod.number(),
   "errors": zod.array(zod.string())
 })
@@ -155,6 +179,7 @@ export const ListQueueResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 }).optional(),
   "requesterName": zod.string(),
@@ -186,6 +211,37 @@ export const RemoveFromQueueParams = zod.object({
 
 
 /**
+ * @summary Skip a queue item (no history, no play count)
+ */
+export const SkipQueueItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const SkipQueueItemResponse = zod.object({
+  "id": zod.number(),
+  "songId": zod.number(),
+  "song": zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "artist": zod.string(),
+  "language": zod.string(),
+  "playCount": zod.number(),
+  "categories": zod.array(zod.string()),
+  "youtubeUrl": zod.string().nullable(),
+  "isPracticing": zod.boolean(),
+  "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
+  "createdAt": zod.string()
+}).optional(),
+  "requesterName": zod.string(),
+  "note": zod.string().nullish(),
+  "position": zod.number(),
+  "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
+  "createdAt": zod.string()
+})
+
+
+/**
  * @summary Mark a queue item as completed (move to played)
  */
 export const CompleteQueueItemParams = zod.object({
@@ -205,6 +261,7 @@ export const CompleteQueueItemResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 }).optional(),
   "requesterName": zod.string(),
@@ -236,6 +293,7 @@ export const ReorderQueueResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 }).optional(),
   "requesterName": zod.string(),
@@ -265,6 +323,7 @@ export const GetCurrentPlayingResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 }).optional(),
   "requesterName": zod.string(),
@@ -286,6 +345,7 @@ export const GetCurrentPlayingResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 }).optional(),
   "requesterName": zod.string(),
@@ -317,6 +377,7 @@ export const SetQueueItemPlayingResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 }).optional(),
   "requesterName": zod.string(),
@@ -453,6 +514,7 @@ export const GetStatsResponse = zod.object({
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
   "createdAt": zod.string()
 })),
   "languageBreakdown": zod.array(zod.object({
@@ -470,7 +532,15 @@ export const GetStatsResponse = zod.object({
   "vodUrl": zod.string().nullish(),
   "timestampText": zod.string().nullish(),
   "performedAt": zod.string()
+})),
+  "monthly": zod.object({
+  "totalCompleted": zod.number(),
+  "newSongs": zod.number(),
+  "topLanguages": zod.array(zod.object({
+  "language": zod.string(),
+  "count": zod.number()
 }))
+}).optional()
 })
 
 

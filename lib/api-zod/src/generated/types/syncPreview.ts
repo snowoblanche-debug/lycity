@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ImportResult {
+export interface SyncPreview {
   rowsDetected: number;
-  imported: number;
-  updated: number;
-  skipped: number;
-  errors: string[];
+  newSongs: number;
+  updatedSongs: number;
+  skippedSongs: number;
+  errors?: string[];
 }

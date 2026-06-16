@@ -1,0 +1,564 @@
+# V1.5 Product Refinement - Streamer First Design
+
+The system is already functional, but I want to optimize it for real-world streamer usage.
+
+My priorities:
+
+1. Streamer convenience
+2. Google Sheet as the single source of truth
+3. Long-term maintainability
+4. Better readability and UX
+5. Future scalability
+
+---
+
+## GOOGLE SHEET SHOULD BE THE MASTER DATABASE
+
+I do NOT want to maintain songs in two places.
+
+Google Sheet should be the source of truth.
+
+Admin panel should sync from Google Sheet.
+
+Workflow:
+
+Google Sheet
+↓
+Sync Songs
+↓
+Update Supabase
+↓
+Website updates automatically
+
+---
+
+## GOOGLE SHEET STRUCTURE
+
+Column A = 歌名
+
+Column B = 歌手
+
+Column C = 語種
+
+Column D = 標籤
+
+Column E = 狀態
+
+Examples:
+
+Ring Ring Ring | 123 | 中文 | #抒情,#RAP | 已解鎖
+
+Jour un | | 小語種 | #EMO,#外文 | 🐣修練中
+
+起風了 | | 中文 | #抒情,#破音警告 | 已解鎖
+
+Mapping:
+
+title = A
+artist = B
+language = C
+tags = D
+status = E
+
+---
+
+## DYNAMIC TAG SYSTEM
+
+Tags must NOT be hardcoded.
+
+Examples:
+
+#抒情
+#EMO
+#RAP
+#外文
+#季節
+#動漫
+#破音警告
+
+Support unlimited future tags.
+
+Examples:
+
+#夏日
+#神曲
+#失戀
+#畢業季
+#開場曲
+#收尾曲
+
+When a new tag appears in Google Sheet:
+
+Automatically create it.
+
+No code changes required.
+
+---
+
+## FILTER SYSTEM
+
+Language filter:
+
+中文
+日文
+英文
+韓文
+小語種
+
+Category filter:
+
+Read dynamically from tags table.
+
+Do not hardcode category values.
+
+---
+
+## STATUS SYSTEM
+
+Status comes directly from Google Sheet.
+
+Current:
+
+已解鎖
+
+🐣修練中
+
+Future:
+
+👑招牌曲
+
+🎤高完成度
+
+❄️季節限定
+
+Status should remain flexible.
+
+---
+
+## SPECIAL DISPLAY
+
+If tags contain:
+
+破音警告
+
+Display:
+
+⚠️ 破音警告
+
+If status is:
+
+🐣修練中
+
+Display:
+
+🐣 修練中
+
+---
+
+## IMPORT DEBUGGING
+
+The importer currently appears to import only part of the sheet.
+
+Please investigate.
+
+Show:
+
+* Rows detected
+* Songs imported
+* Songs skipped
+* Reason for skipped rows
+
+Add an Import Log page.
+
+---
+
+## ADMIN UX REDESIGN
+
+Current Add Song modal is too technical.
+
+Replace free text inputs with streamer-friendly controls.
+
+Language:
+
+Dropdown
+
+中文
+日文
+英文
+韓文
+小語種
+
+Status:
+
+Dropdown
+
+已解鎖
+🐣修練中
+👑招牌曲
+🎤高完成度
+❄️季節限定
+
+Tags:
+
+Multi-select chips
+
+Examples:
+
+☑ 抒情
+☑ EMO
+☑ RAP
+☑ 外文
+☑ 季節
+☑ 動漫
+☑ 破音警告
+
+Load tags dynamically from database.
+
+---
+
+## NOW PLAYING EXPERIENCE
+
+Homepage should display:
+
+🎵 現正演唱
+
+Song Title
+
+Artist
+
+Requester
+
+This should be visible without opening OBS.
+
+---
+
+## QUEUE MANAGEMENT
+
+Current workflow:
+
+等待
+↓
+現正演唱
+↓
+完唱
+
+Add:
+
+跳過
+
+When skipped:
+
+* remove from queue
+* do NOT increase sing_count
+* do NOT write history
+
+---
+
+## SONG HISTORY
+
+History page should show:
+
+Date
+Time
+Song Title
+Artist
+Requester
+Language
+Tags
+
+Example:
+
+15:45
+
+起風了
+
+點歌者:
+Jason
+
+語種:
+中文
+
+標籤:
+抒情
+破音警告
+
+---
+
+## STATISTICS REDESIGN
+
+Current statistics are misleading because they come from imported demo data.
+
+Please separate:
+
+1. Monthly Statistics
+
+Current Month
+
+Total Songs Performed
+
+Most Requested Songs
+
+Most Performed Languages
+
+2. Lifetime Statistics
+
+All Time
+
+Total Performances
+
+Unique Songs Performed
+
+Most Performed Songs
+
+3. Recent Activity
+
+Last 10 Completed Songs
+
+Statistics should be based on song_history.
+
+Not imported play counts.
+
+---
+
+## TEXT CONTRAST & ACCESSIBILITY
+
+Many texts still blend into the background.
+
+Accessibility must be improved.
+
+Primary Text:
+#243447
+
+Secondary Text:
+#4B5563
+
+Muted Text:
+#6B7280
+
+Never use opacity below 80%.
+
+Apply to:
+
+* Table headers
+* Form labels
+* Search placeholders
+* Admin descriptions
+* Song metadata
+* Statistics cards
+
+Target:
+
+WCAG AA readability.
+
+Readability is more important than maintaining a pale aesthetic.
+
+---
+
+## BANNER
+
+Change subtitle:
+
+Current:
+
+點播喜歡的歌曲，一起留下今晚的旋律
+
+Replace with:
+
+點播喜歡的歌曲，一起留下今天的旋律
+
+---
+
+## FUTURE COMPATIBILITY
+
+Prepare database structure for:
+
+* Twitch Channel Points
+* YouTube URL auto-import
+* VOD timestamps
+* OBS overlay
+* Song ranking
+* Seasonal playlists
+
+Do not implement yet.
+
+Only prepare architecture.
+
+---
+
+## AFTER IMPLEMENTATION
+
+Please show:
+
+* Database schema
+* songs table
+* tags table
+* song_tags table
+* queue table
+* song_history table
+* statistics calculation logic
+
+and explain the root cause of the current Google Sheet import issue.
+
+## STREAMER WORKFLOW FIRST
+
+Please optimize for actual streamer usage.
+
+A streamer should be able to maintain 300~1000 songs without manually editing every song in the website.
+
+The website should be an operating interface.
+
+Google Sheet should be the management interface.
+
+---
+
+## IDEAL DAILY WORKFLOW
+
+Streamer:
+
+1. Add songs in Google Sheet
+2. Edit tags in Google Sheet
+3. Change song status in Google Sheet
+4. Click "Sync Songs"
+5. Finished
+
+No duplicate maintenance.
+
+---
+
+## BULK MANAGEMENT
+
+Admin should support:
+
+* Bulk Sync
+* Bulk Refresh
+* Bulk Rebuild Tags
+* Bulk Update Languages
+
+Without editing songs one by one.
+
+---
+
+## YOUTUBE URL ASSIST
+
+When adding a song manually:
+
+If a YouTube URL is pasted:
+
+https://youtube.com/...
+
+System should attempt to:
+
+* read title
+* suggest song name
+* suggest artist
+
+Streamer only confirms.
+
+Future feature preparation is enough.
+
+---
+
+## SONG SEARCH EXPERIENCE
+
+Search should support:
+
+* Song Title
+* Artist
+* Language
+* Tags
+
+Examples:
+
+Search:
+
+Aimer
+
+Should find all Aimer songs.
+
+Search:
+
+破音
+
+Should find all songs tagged 破音警告.
+
+Search:
+
+季節
+
+Should find all seasonal songs.
+
+---
+
+## HOMEPAGE IMPROVEMENTS
+
+Add:
+
+🎵 現正演唱
+
+under the banner.
+
+Display:
+
+Song Title
+Artist
+Requester
+
+This should be visible immediately when entering the site.
+
+---
+
+## MONTHLY DASHBOARD
+
+Admin Overview should show:
+
+本月演唱數
+
+本月熱門歌曲
+
+本月熱門語種
+
+本月新增歌曲
+
+---
+
+## LIFETIME DASHBOARD
+
+Admin Overview should show:
+
+總演唱數
+
+總歌曲數
+
+總點歌數
+
+歷史最熱門歌曲
+
+---
+
+## IMPORT SAFETY
+
+Google Sheet sync should never delete data silently.
+
+Before sync:
+
+Show:
+
+Rows detected
+New songs
+Updated songs
+Skipped songs
+
+Confirmation dialog:
+
+"Ready to sync 327 songs?"
+
+---
+
+## DATA OWNERSHIP
+
+Google Sheet is the source of truth.
+
+Supabase is a cache and runtime database.
+
+The system should always be able to rebuild itself from Google Sheet.
+
