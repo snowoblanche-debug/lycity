@@ -1,13 +1,14 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LayoutDashboard, Music, ListMusic, ListOrdered, Settings, ChevronLeft } from "lucide-react";
+import { LayoutDashboard, Music, ListMusic, ListOrdered, Settings, ChevronLeft, History } from "lucide-react";
 
 const sidebarNavItems = [
   { title: "概覽", href: "/admin", icon: LayoutDashboard },
   { title: "歌曲管理", href: "/admin/songs", icon: Music },
   { title: "分類管理", href: "/admin/categories", icon: ListMusic },
   { title: "點歌管理", href: "/admin/queue", icon: ListOrdered },
+  { title: "演唱紀錄", href: "/history", icon: History },
   { title: "系統設定", href: "/admin/settings", icon: Settings },
 ];
 

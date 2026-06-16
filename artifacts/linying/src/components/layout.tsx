@@ -6,12 +6,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex flex-col">
-      {/* Subtle background texture */}
       <div className="fixed inset-0 z-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse at 60% 0%, rgba(112,136,163,0.10) 0%, transparent 70%), radial-gradient(ellipse at 10% 80%, rgba(142,163,185,0.08) 0%, transparent 60%)" }}
       />
 
-      {/* Header */}
       <header className="relative z-10 w-full backdrop-blur-md border-b border-border/60 py-3.5 px-6 flex items-center justify-between"
         style={{ background: "rgba(255,255,255,0.80)" }}>
         <Link href="/">
@@ -25,13 +23,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Link href="/">
             <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">首頁</span>
           </Link>
+          <Link href="/history">
+            <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">演唱紀錄</span>
+          </Link>
           <Link href="/admin">
             <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">管理後台</span>
           </Link>
         </nav>
       </header>
 
-      {/* Main Content */}
       <main className="relative z-10 flex-1 flex flex-col">
         {children}
       </main>

@@ -6,11 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { Song } from './song';
+import type { SongHistory } from './songHistory';
 import type { StatsLanguageBreakdownItem } from './statsLanguageBreakdownItem';
 
 export interface Stats {
   totalSongs: number;
   totalPlayed: number;
+  totalCompleted: number;
   topSongs: Song[];
   languageBreakdown: StatsLanguageBreakdownItem[];
+  recentPerformances: SongHistory[];
 }

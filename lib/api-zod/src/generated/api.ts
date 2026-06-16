@@ -298,6 +298,66 @@ export const GetCurrentPlayingResponse = zod.object({
 
 
 /**
+ * @summary Mark a queue item as now playing
+ */
+export const SetQueueItemPlayingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const SetQueueItemPlayingResponse = zod.object({
+  "id": zod.number(),
+  "songId": zod.number(),
+  "song": zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "artist": zod.string(),
+  "language": zod.string(),
+  "playCount": zod.number(),
+  "categories": zod.array(zod.string()),
+  "youtubeUrl": zod.string().nullable(),
+  "isPracticing": zod.boolean(),
+  "hasPitchWarning": zod.boolean(),
+  "createdAt": zod.string()
+}).optional(),
+  "requesterName": zod.string(),
+  "note": zod.string().nullish(),
+  "position": zod.number(),
+  "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary List song performance history
+ */
+export const listHistoryQueryPageDefault = 1;
+export const listHistoryQueryLimitDefault = 50;
+
+export const ListHistoryQueryParams = zod.object({
+  "page": zod.coerce.number().default(listHistoryQueryPageDefault),
+  "limit": zod.coerce.number().default(listHistoryQueryLimitDefault)
+})
+
+export const ListHistoryResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "songId": zod.number().nullish(),
+  "songTitle": zod.string(),
+  "artist": zod.string(),
+  "requester": zod.string(),
+  "language": zod.string(),
+  "tags": zod.array(zod.string()),
+  "vodUrl": zod.string().nullish(),
+  "timestampText": zod.string().nullish(),
+  "performedAt": zod.string()
+})),
+  "total": zod.number(),
+  "page": zod.number(),
+  "limit": zod.number()
+})
+
+
+/**
  * @summary List all categories
  */
 export const ListCategoriesResponse = zod.object({
@@ -382,6 +442,7 @@ export const UpdateSettingsResponse = zod.object({
 export const GetStatsResponse = zod.object({
   "totalSongs": zod.number(),
   "totalPlayed": zod.number(),
+  "totalCompleted": zod.number(),
   "topSongs": zod.array(zod.object({
   "id": zod.number(),
   "title": zod.string(),
@@ -397,6 +458,18 @@ export const GetStatsResponse = zod.object({
   "languageBreakdown": zod.array(zod.object({
   "language": zod.string(),
   "count": zod.number()
+})),
+  "recentPerformances": zod.array(zod.object({
+  "id": zod.number(),
+  "songId": zod.number().nullish(),
+  "songTitle": zod.string(),
+  "artist": zod.string(),
+  "requester": zod.string(),
+  "language": zod.string(),
+  "tags": zod.array(zod.string()),
+  "vodUrl": zod.string().nullish(),
+  "timestampText": zod.string().nullish(),
+  "performedAt": zod.string()
 }))
 })
 

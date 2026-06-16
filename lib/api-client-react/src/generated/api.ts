@@ -28,6 +28,7 @@ import type {
   GoogleSheetImport,
   HealthStatus,
   ImportResult,
+  ListHistoryParams,
   ListSongsParams,
   QueueItem,
   QueueItemInput,
@@ -36,6 +37,7 @@ import type {
   Settings,
   SettingsUpdate,
   Song,
+  SongHistoryList,
   SongInput,
   SongList,
   SongUpdate,
@@ -1000,6 +1002,160 @@ export function useGetCurrentPlaying<TData = Awaited<ReturnType<typeof getCurren
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetCurrentPlayingQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getSetQueueItemPlayingUrl = (id: number,) => {
+
+
+
+
+  return `/api/queue/${id}/play`
+}
+
+/**
+ * @summary Mark a queue item as now playing
+ */
+export const setQueueItemPlaying = async (id: number, options?: RequestInit): Promise<QueueItem> => {
+
+  return customFetch<QueueItem>(getSetQueueItemPlayingUrl(id),
+  {
+    ...options,
+    method: 'PATCH'
+
+
+  }
+);}
+
+
+
+
+export const getSetQueueItemPlayingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setQueueItemPlaying>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setQueueItemPlaying>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['setQueueItemPlaying'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setQueueItemPlaying>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  setQueueItemPlaying(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetQueueItemPlayingMutationResult = NonNullable<Awaited<ReturnType<typeof setQueueItemPlaying>>>
+
+    export type SetQueueItemPlayingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Mark a queue item as now playing
+ */
+export const useSetQueueItemPlaying = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setQueueItemPlaying>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setQueueItemPlaying>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getSetQueueItemPlayingMutationOptions(options));
+    }
+
+export const getListHistoryUrl = (params?: ListHistoryParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/history?${stringifiedParams}` : `/api/history`
+}
+
+/**
+ * @summary List song performance history
+ */
+export const listHistory = async (params?: ListHistoryParams, options?: RequestInit): Promise<SongHistoryList> => {
+
+  return customFetch<SongHistoryList>(getListHistoryUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListHistoryQueryKey = (params?: ListHistoryParams,) => {
+    return [
+    `/api/history`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListHistoryQueryOptions = <TData = Awaited<ReturnType<typeof listHistory>>, TError = ErrorType<unknown>>(params?: ListHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListHistoryQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listHistory>>> = ({ signal }) => listHistory(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof listHistory>>>
+export type ListHistoryQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List song performance history
+ */
+
+export function useListHistory<TData = Awaited<ReturnType<typeof listHistory>>, TError = ErrorType<unknown>>(
+ params?: ListHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListHistoryQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

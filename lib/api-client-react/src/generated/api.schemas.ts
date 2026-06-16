@@ -166,6 +166,29 @@ export interface SettingsUpdate {
   bannerText?: string | null;
 }
 
+export interface SongHistory {
+  id: number;
+  /** @nullable */
+  songId?: number | null;
+  songTitle: string;
+  artist: string;
+  requester: string;
+  language: string;
+  tags: string[];
+  /** @nullable */
+  vodUrl?: string | null;
+  /** @nullable */
+  timestampText?: string | null;
+  performedAt: string;
+}
+
+export interface SongHistoryList {
+  items: SongHistory[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export type StatsLanguageBreakdownItem = {
   language: string;
   count: number;
@@ -174,8 +197,10 @@ export type StatsLanguageBreakdownItem = {
 export interface Stats {
   totalSongs: number;
   totalPlayed: number;
+  totalCompleted: number;
   topSongs: Song[];
   languageBreakdown: StatsLanguageBreakdownItem[];
+  recentPerformances: SongHistory[];
 }
 
 export interface GoogleSheetImport {
@@ -194,6 +219,11 @@ export type ListSongsParams = {
 search?: string;
 language?: string;
 category?: string;
+page?: number;
+limit?: number;
+};
+
+export type ListHistoryParams = {
 page?: number;
 limit?: number;
 };

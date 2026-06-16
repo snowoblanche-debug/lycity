@@ -254,6 +254,49 @@ paths:
               schema:
                 $ref: "#/components/schemas/CurrentPlaying"
 
+  /queue/{id}/play:
+    patch:
+      operationId: setQueueItemPlaying
+      tags: [queue]
+      summary: Mark a queue item as now playing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Queue item set to playing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueItem"
+
+  /history:
+    get:
+      operationId: listHistory
+      tags: [history]
+      summary: List song performance history
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: History list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongHistoryList"
+
   /categories:
     get:
       operationId: listCategories
@@ -585,13 +628,57 @@ components:
         bannerText:
           type: ["string", "null"]
 
+    SongHistory:
+      type: object
+      required: [id, songTitle, artist, requester, language, tags, performedAt]
+      properties:
+        id:
+          type: integer
+        songId:
+          type: ["integer", "null"]
+        songTitle:
+          type: string
+        artist:
+          type: string
+        requester:
+          type: string
+        language:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        vodUrl:
+          type: ["string", "null"]
+        timestampText:
+          type: ["string", "null"]
+        performedAt:
+          type: string
+
+    SongHistoryList:
+      type: object
+      required: [items, total, page, limit]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SongHistory"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
     Stats:
       type: object
-      required: [totalSongs, totalPlayed, topSongs, languageBreakdown]
+      required: [totalSongs, totalPlayed, totalCompleted, topSongs, languageBreakdown, recentPerformances]
       properties:
         totalSongs:
           type: integer
         totalPlayed:
+          type: integer
+        totalCompleted:
           type: integer
         topSongs:
           type: array
@@ -607,6 +694,10 @@ components:
                 type: string
               count:
                 type: integer
+        recentPerformances:
+          type: array
+          items:
+            $ref: "#/components/schemas/SongHistory"
 
     GoogleSheetImport:
       type: object
