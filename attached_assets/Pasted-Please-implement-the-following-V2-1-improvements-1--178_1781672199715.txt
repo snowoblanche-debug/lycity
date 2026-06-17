@@ -1,0 +1,207 @@
+Please implement the following V2.1 improvements.
+
+========================================
+
+1. SMART YOUTUBE TITLE PARSER
+   ========================================
+
+Current parsing is not accurate enough.
+
+Example:
+
+不是花火呀 - Ring Ring Ring (原唱：SHE)
+「拉長耳朵提高警覺，神經細胞全面戒備」
+【動態歌詞/pinyin】
+
+Current result:
+
+Song:
+Ring Ring Ring 「拉長耳朵...
+
+Artist:
+不是花火呀
+
+Desired:
+
+Song:
+Ring Ring Ring
+
+Artist:
+不是花火呀
+
+---
+
+Add a title cleaning pipeline.
+
+Remove:
+
+(原唱: xxx)
+（原唱: xxx）
+
+(cover)
+（cover）
+
+(lyrics)
+（lyrics）
+
+(official video)
+（official video）
+
+(MV)
+
+(Karaoke)
+
+【動態歌詞】
+【歌詞】
+【Lyrics】
+
+[pinyin]
+[pīn yīn]
+[pinyin lyrics]
+
+---
+
+Keep original title internally.
+
+Add fields:
+
+youtube_title_original
+youtube_title_cleaned
+
+---
+
+Quick Add UI:
+
+Show:
+
+Original Title
+↓
+Cleaned Result
+
+Allow streamer to edit before saving.
+
+========================================
+2. PRIMARY / SECONDARY TAG SYSTEM
+=================================
+
+Current tag system is flat.
+
+This will become difficult with 300~1000 songs.
+
+Please redesign.
+
+---
+
+Each song should have:
+
+Primary Tag
+(single select)
+
+Secondary Tags
+(multi select)
+
+---
+
+Example:
+
+Song:
+Ring Ring Ring
+
+Primary Tag:
+派對
+
+Secondary Tags:
+神曲
+中文
+經典
+
+---
+
+Another example:
+
+Song:
+妥協
+
+Primary Tag:
+抒情
+
+Secondary Tags:
+EMO
+失戀
+
+---
+
+Database:
+
+song_primary_tag_id
+
+song_secondary_tags
+
+or relationship table
+
+---
+
+UI:
+
+Primary Tag
+
+Dropdown
+(single selection)
+
+Secondary Tags
+
+Chip selector
+(multi selection)
+
+---
+
+Filtering:
+
+Primary Tag Filter
+
+Secondary Tag Filter
+
+Search should support both.
+
+========================================
+3. AUTO MIGRATION
+=================
+
+For existing songs:
+
+If tags contain:
+
+抒情
+
+Set:
+
+Primary Tag = 抒情
+
+Remaining tags become secondary tags.
+
+Example:
+
+#抒情
+#EMO
+#季節
+
+↓
+
+Primary:
+抒情
+
+Secondary:
+EMO
+季節
+
+========================================
+4. FUTURE GOAL
+==============
+
+The song library must remain manageable at:
+
+300 songs
+500 songs
+1000 songs
+
+Streamer workflow is the priority.
