@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/auth-context";
+import { useGetSettings } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { data: settings } = useGetSettings();
 
   if (isAdmin) {
     navigate("/admin");
@@ -52,7 +54,7 @@ export default function LoginPage() {
           </div>
           <div className="text-center">
             <h1 className="text-lg font-semibold text-foreground tracking-tight">管理後台</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">聆櫻聖境的點歌旋律</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{settings?.siteName || "LY.city"}</p>
           </div>
         </div>
 
@@ -80,7 +82,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-xs text-muted-foreground">
-          僅限聆櫻本人使用
+          僅限管理員使用
         </p>
       </div>
     </div>

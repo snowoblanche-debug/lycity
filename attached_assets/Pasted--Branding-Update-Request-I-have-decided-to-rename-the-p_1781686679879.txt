@@ -1,0 +1,195 @@
+# Branding Update Request
+
+I have decided to rename the project branding.
+
+Current branding:
+
+聆櫻聖境的點歌旋律
+
+should be replaced with:
+
+LY.city
+
+---
+
+## Global Branding Change
+
+Please update all branding references across the application.
+
+Current:
+
+聆櫻聖境的點歌旋律
+
+Replace with:
+
+LY.city
+
+---
+
+## Site Identity
+
+Site Name:
+
+LY.city
+
+Site Subtitle:
+
+千羽織雪 Oriyuki｜歌回點歌系統
+
+---
+
+## Update All Locations
+
+Please verify and update:
+
+1. Browser Tab Title
+
+Current:
+聆櫻聖境的點歌旋律
+
+Replace:
+LY.city
+
+or
+
+LY.city｜千羽織雪歌回點歌系統
+
+---
+
+2. Navbar Logo Area
+
+Current:
+聆櫻聖境的點歌旋律
+
+Replace:
+LY.city
+
+---
+
+3. Homepage Hero Section
+
+Replace title with:
+
+LY.city
+
+Subtitle:
+
+千羽織雪 Oriyuki｜歌回點歌系統
+
+---
+
+4. Login Page
+
+Current login page branding should also use:
+
+LY.city
+
+Keep:
+
+僅限管理員使用
+
+---
+
+5. Admin Dashboard
+
+Replace any old project names with:
+
+LY.city
+
+---
+
+6. OBS Overlay
+
+Replace any hardcoded branding references.
+
+---
+
+7. Settings Preview
+
+Brand preview should display:
+
+LY.city
+
+instead of the old project name.
+
+---
+
+## Settings-Based Branding
+
+Do NOT hardcode branding.
+
+Store branding inside the settings table.
+
+Add fields:
+
+site_name
+
+site_subtitle
+
+Example:
+
+site_name:
+LY.city
+
+site_subtitle:
+千羽織雪 Oriyuki｜歌回點歌系統
+
+---
+
+## Admin Settings
+
+Allow editing:
+
+Site Name
+
+Site Subtitle
+
+from:
+
+Admin → System Settings
+
+No code changes should be required in the future.
+
+---
+
+## Future Flexibility
+
+The platform should be reusable.
+
+Examples:
+
+LY.city
+
+Purple Project
+
+Snowblanche Music
+
+Oriyuki Live
+
+Future rebranding should only require updating:
+
+site_name
+
+site_subtitle
+
+without touching code.
+
+---
+
+## Verification
+
+After implementation please show:
+
+1. Where branding is stored
+2. Settings schema
+3. All pages updated
+4. Screenshots of:
+
+   * Homepage
+   * Login Page
+   * Admin Dashboard
+   * OBS Page
+
+I want to confirm there are no remaining references to:
+
+聆櫻聖境的點歌旋律

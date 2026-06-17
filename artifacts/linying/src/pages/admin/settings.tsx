@@ -204,7 +204,7 @@ export default function AdminSettings() {
                     id="siteName"
                     value={formData.siteName}
                     onChange={e => setFormData({ ...formData, siteName: e.target.value })}
-                    placeholder="聆櫻聖境的點歌旋律"
+                    placeholder="LY.city"
                   />
                   <p className="text-xs text-muted-foreground">顯示在左上角與瀏覽器標籤</p>
                 </div>
@@ -250,7 +250,7 @@ export default function AdminSettings() {
                     <div className="absolute inset-0" style={{ background: "rgba(36,52,71,0.38)" }} />
                     <div className="relative h-full flex flex-col items-center justify-center gap-1">
                       <span className="text-lg font-bold text-white tracking-widest drop-shadow-lg">
-                        {formData.siteName || "聆櫻聖境的點歌旋律"}
+                        {formData.siteName || "LY.city"}
                       </span>
                       {formData.siteSubtitle && (
                         <span className="text-xs text-white/80 tracking-wider">{formData.siteSubtitle}</span>

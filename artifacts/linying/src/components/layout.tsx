@@ -17,7 +17,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Link href="/">
           <div className="flex items-center gap-2 cursor-pointer">
             <span className="text-lg font-semibold tracking-wide text-foreground">
-              {settings?.siteName || "聆櫻聖境"}
+              {settings?.siteName || "LY.city"}
             </span>
           </div>
         </Link>

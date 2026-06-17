@@ -1,6 +1,6 @@
-# 聆櫻聖境的點歌旋律
+# LY.city — 歌回點歌系統
 
-A livestreamer song request system for 聆櫻 (Lingying). Viewers browse a song library and queue requests; the streamer sees an OBS overlay showing current/next song.
+A VTuber livestreamer song request system. Viewers browse a song library and queue requests; the streamer sees an OBS overlay showing current/next song. Fully rebranded via DB-driven settings — no hardcoded branding.
 
 ## Run & Operate
 
@@ -40,12 +40,13 @@ A livestreamer song request system for 聆櫻 (Lingying). Viewers browse a song 
 - Queue `position` field is manually managed (not auto-increment) to support drag-to-reorder
 - OBS page uses `background: transparent` — must be set as a browser source in OBS with "Allow transparency" checked
 - Google Sheet import expects columns: 歌名/title, 歌手/artist, optional: 語種/language, youtube/url, 修練/practice, 破音/pitch, 分類/category
+- **Branding is DB-driven**: `site_name` and `site_subtitle` in the settings table control all display names. To rebrand, update those fields in Admin → 系統設定. No code changes needed.
 
 ## Product
 
-- **Homepage** (`/`): Banner image area, 70% song library with search + language/category filters, 30% live queue panel (auto-refreshes every 10s)
+- **Homepage** (`/`): Banner with settings-driven site name/subtitle, 70% song library with search + language/category filters, 30% live queue panel (auto-refreshes)
 - **OBS Overlay** (`/obs`): Transparent background, shows current + next song with artist and requester name (auto-refreshes every 5s)
-- **Admin Panel** (`/admin`): Overview stats, song CRUD + Google Sheet import, category management, queue management, site settings (banner URL)
+- **Admin Panel** (`/admin`): Overview stats, song CRUD + Google Sheet import, category management, queue management, requester leaderboard, site settings
 
 ## User preferences
 

@@ -5,7 +5,7 @@ import { z } from "zod/v4";
 export const settingsTable = pgTable("settings", {
   id: serial("id").primaryKey(),
   bannerImageUrl: text("banner_image_url"),
-  siteName: text("site_name").notNull().default("聆櫻聖境的點歌旋律"),
+  siteName: text("site_name").notNull().default("LY.city"),
   siteSubtitle: text("site_subtitle"),
   bannerText: text("banner_text"),
   obsKey: text("obs_key"),
