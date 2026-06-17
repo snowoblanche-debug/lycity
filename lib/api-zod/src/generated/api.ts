@@ -129,6 +129,36 @@ export const DeleteSongParams = zod.object({
 
 
 /**
+ * @summary Analyze a YouTube URL and suggest song metadata
+ */
+export const AnalyzeUrlBody = zod.object({
+  "url": zod.string()
+})
+
+export const AnalyzeUrlResponse = zod.object({
+  "rawTitle": zod.string(),
+  "channelName": zod.string(),
+  "thumbnailUrl": zod.string(),
+  "youtubeUrl": zod.string(),
+  "suggestedTitle": zod.string(),
+  "suggestedArtist": zod.string(),
+  "similarSongs": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "artist": zod.string(),
+  "language": zod.string(),
+  "playCount": zod.number(),
+  "categories": zod.array(zod.string()),
+  "youtubeUrl": zod.string().nullable(),
+  "isPracticing": zod.boolean(),
+  "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
+  "createdAt": zod.string()
+}))
+})
+
+
+/**
  * @summary Preview what a Google Sheet sync would do
  */
 export const PreviewGoogleSheetSyncBody = zod.object({
@@ -469,13 +499,26 @@ export const DeleteCategoryParams = zod.object({
 
 
 /**
+ * @summary Verify OBS access key
+ */
+export const VerifyObsKeyQueryParams = zod.object({
+  "key": zod.coerce.string().optional()
+})
+
+export const VerifyObsKeyResponse = zod.object({
+  "valid": zod.boolean()
+})
+
+
+/**
  * @summary Get site settings
  */
 export const GetSettingsResponse = zod.object({
   "bannerImageUrl": zod.string().nullable(),
   "siteName": zod.string(),
   "siteSubtitle": zod.string().nullish(),
-  "bannerText": zod.string().nullish()
+  "bannerText": zod.string().nullish(),
+  "obsKeyEnabled": zod.boolean()
 })
 
 
@@ -486,14 +529,16 @@ export const UpdateSettingsBody = zod.object({
   "bannerImageUrl": zod.string().nullish(),
   "siteName": zod.string().optional(),
   "siteSubtitle": zod.string().nullish(),
-  "bannerText": zod.string().nullish()
+  "bannerText": zod.string().nullish(),
+  "obsKey": zod.string().nullish()
 })
 
 export const UpdateSettingsResponse = zod.object({
   "bannerImageUrl": zod.string().nullable(),
   "siteName": zod.string(),
   "siteSubtitle": zod.string().nullish(),
-  "bannerText": zod.string().nullish()
+  "bannerText": zod.string().nullish(),
+  "obsKeyEnabled": zod.boolean()
 })
 
 

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Save, ExternalLink } from "lucide-react";
+import { Save, ExternalLink, Eye, EyeOff, Copy, RefreshCw } from "lucide-react";
 
 export default function AdminSettings() {
   const queryClient = useQueryClient();
@@ -20,6 +20,11 @@ export default function AdminSettings() {
     bannerImageUrl: ""
   });
 
+  const [obsKey, setObsKey] = useState("");
+  const [obsKeyLoading, setObsKeyLoading] = useState(false);
+  const [obsKeyLoaded, setObsKeyLoaded] = useState(false);
+  const [showObsKey, setShowObsKey] = useState(false);
+
   useEffect(() => {
     if (settings) {
       setFormData({
@@ -30,13 +35,31 @@ export default function AdminSettings() {
     }
   }, [settings]);
 
+  // Load current OBS key from admin endpoint (requires auth)
+  useEffect(() => {
+    if (obsKeyLoaded) return;
+    setObsKeyLoading(true);
+    const token = localStorage.getItem("admin_token");
+    fetch("/api/admin/settings", {
+      headers: { Authorization: `Bearer ${token ?? ""}` }
+    })
+      .then(r => r.ok ? r.json() : { obsKey: null })
+      .then((data: { obsKey?: string | null }) => {
+        setObsKey(data.obsKey ?? "");
+        setObsKeyLoaded(true);
+      })
+      .catch(() => setObsKeyLoaded(true))
+      .finally(() => setObsKeyLoading(false));
+  }, [obsKeyLoaded]);
+
   const handleSave = () => {
     updateSettings.mutate({
       data: {
         siteName: formData.siteName || undefined,
         siteSubtitle: formData.siteSubtitle || null,
-        bannerImageUrl: formData.bannerImageUrl || null
-      }
+        bannerImageUrl: formData.bannerImageUrl || null,
+        obsKey: obsKey || null,
+      } as any
     }, {
       onSuccess: () => {
         toast.success("設定已儲存");
@@ -45,14 +68,31 @@ export default function AdminSettings() {
     });
   };
 
+  const handleGenerateKey = () => {
+    const key = Array.from(crypto.getRandomValues(new Uint8Array(18)))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+    setObsKey(key);
+  };
+
+  const obsUrl = obsKey
+    ? `${window.location.origin}/obs?key=${obsKey}`
+    : `${window.location.origin}/obs`;
+
+  const copyObsUrl = () => {
+    navigator.clipboard.writeText(obsUrl);
+    toast.success("已複製 OBS 網址");
+  };
+
   return (
     <AdminLayout>
       <div className="flex flex-col gap-6 max-w-2xl">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">系統設定</h1>
-          <p className="text-muted-foreground text-sm">自訂你的點歌頁面外觀與文字。</p>
+          <p className="text-muted-foreground text-sm">自訂你的點歌頁面外觀與安全設定。</p>
         </div>
 
+        {/* Page text */}
         <Card className="border-border/60 shadow-sm">
           <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle className="text-base font-semibold">頁面文字</CardTitle>
@@ -73,7 +113,6 @@ export default function AdminSettings() {
                   />
                   <p className="text-xs text-muted-foreground">顯示在左上角與瀏覽器標籤</p>
                 </div>
-
                 <div className="space-y-1.5">
                   <Label htmlFor="siteSubtitle" className="text-sm font-medium">橫幅副標題</Label>
                   <Input
@@ -89,13 +128,14 @@ export default function AdminSettings() {
           </CardContent>
         </Card>
 
+        {/* Banner image */}
         <Card className="border-border/60 shadow-sm">
           <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle className="text-base font-semibold">橫幅背景圖片</CardTitle>
             <CardDescription>上傳圖片至 Discord 後貼上圖片連結，建議尺寸 1920×400 以上。</CardDescription>
           </CardHeader>
           <CardContent className="px-6 pb-6 space-y-5">
-            {isLoading ? null : (
+            {!isLoading && (
               <>
                 <div className="space-y-1.5">
                   <Label htmlFor="bannerImage" className="text-sm font-medium">圖片 URL</Label>
@@ -109,34 +149,83 @@ export default function AdminSettings() {
                     若留空則使用預設漸層背景。在 Discord 上傳圖片後，右鍵點擊圖片 → 複製連結。
                   </p>
                 </div>
-
                 {formData.bannerImageUrl && (
                   <div className="rounded-xl overflow-hidden border border-border/60 h-36 relative shadow-sm">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${formData.bannerImageUrl})` }}
-                    />
+                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${formData.bannerImageUrl})` }} />
                     <div className="absolute inset-0" style={{ background: "rgba(36,52,71,0.38)" }} />
                     <div className="relative h-full flex flex-col items-center justify-center gap-1">
                       <span className="text-lg font-bold text-white tracking-widest drop-shadow-lg">
                         {formData.siteName || "聆櫻聖境的點歌旋律"}
                       </span>
                       {formData.siteSubtitle && (
-                        <span className="text-xs text-white/80 tracking-wider">
-                          {formData.siteSubtitle}
-                        </span>
+                        <span className="text-xs text-white/80 tracking-wider">{formData.siteSubtitle}</span>
                       )}
                     </div>
-                    <a
-                      href={formData.bannerImageUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="absolute top-2 right-2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-md transition-colors"
-                    >
+                    <a href={formData.bannerImageUrl} target="_blank" rel="noreferrer"
+                      className="absolute top-2 right-2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-md transition-colors">
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </div>
                 )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* OBS security */}
+        <Card className="border-border/60 shadow-sm">
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle className="text-base font-semibold">OBS 安全金鑰</CardTitle>
+            <CardDescription>
+              設定金鑰後，OBS 網址需帶上{" "}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">?key=...</code>{" "}
+              才能顯示覆蓋層。留空則 OBS 頁面公開。
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 space-y-4">
+            {obsKeyLoading ? (
+              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />載入中...
+              </div>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">存取金鑰</Label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type={showObsKey ? "text" : "password"}
+                        value={obsKey}
+                        onChange={e => setObsKey(e.target.value)}
+                        placeholder="留空表示不限制存取"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowObsKey(!showObsKey)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showObsKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleGenerateKey} className="flex-shrink-0">
+                      隨機產生
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">OBS 瀏覽器來源網址</Label>
+                  <div className="flex gap-2">
+                    <Input value={obsUrl} readOnly className="flex-1 text-xs text-muted-foreground bg-muted/50" />
+                    <Button variant="outline" size="icon" onClick={copyObsUrl} className="flex-shrink-0">
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    在 OBS 新增瀏覽器來源，貼上此網址並勾選「允許透明度」
+                  </p>
+                </div>
               </>
             )}
           </CardContent>
@@ -147,7 +236,6 @@ export default function AdminSettings() {
             onClick={handleSave}
             disabled={updateSettings.isPending || isLoading}
             className="px-6"
-            data-testid="btn-save-settings"
           >
             <Save className="w-4 h-4 mr-2" />
             {updateSettings.isPending ? "儲存中..." : "儲存設定"}

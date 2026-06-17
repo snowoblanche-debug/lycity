@@ -14,4 +14,6 @@ export interface SettingsUpdate {
   siteSubtitle?: string | null;
   /** @nullable */
   bannerText?: string | null;
+  /** @nullable */
+  obsKey?: string | null;
 }

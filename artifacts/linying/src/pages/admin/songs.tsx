@@ -9,20 +9,41 @@ import {
   useImportFromGoogleSheet,
   usePreviewGoogleSheetSync,
   useListCategories,
+  useAnalyzeUrl,
+  type YouTubeAnalysis,
 } from "@workspace/api-client-react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Search, Edit2, Trash2, DownloadCloud, AlertCircle, RefreshCw } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, DownloadCloud, AlertCircle, RefreshCw, Zap, Sparkles, ArrowLeft, ExternalLink } from "lucide-react";
 
 const LANGUAGES = ["中文", "日文", "英文", "韓文", "小語種"];
 const STATUSES = ["已解鎖", "🐣修練中", "👑招牌曲", "🎤高完成度", "❄️季節限定"];
+
+// Client-side title cleaner (mirrors backend logic)
+function cleanTitle(title: string): string {
+  let t = title;
+  t = t.replace(/[【（(\[【][^】）)\]]*(?:Cover|Lyrics|動態歌詞|Official\s*(?:Video|MV|Audio)|MV|Karaoke|カラオケ|翻唱|原唱|伴奏|歌詞)[^】）)\]]*[】）)\]]/gi, "");
+  const patterns: RegExp[] = [
+    /[\s\-–|｜]+(?:Official\s+)?(?:Music\s+Video|Video|MV|Audio)$/gi,
+    /[\s\-–|｜]+Lyrics?$/gi,
+    /[\s\-–|｜]+動態歌詞$/g,
+    /[\s\-–|｜]+Cover$/gi,
+    /[\s\-–|｜]+Karaoke$/gi,
+    /[\s\-–|｜]+原唱$/g,
+    /[\s\-–|｜]+翻唱$/g,
+    /[\s\-–|｜]+伴奏$/g,
+    /[\s\-–|｜]+歌詞$/g,
+  ];
+  for (const p of patterns) t = t.replace(p, "");
+  return t.trim();
+}
 
 function TagChips({ selected, available, onChange }: {
   selected: string[];
@@ -52,6 +73,22 @@ function TagChips({ selected, available, onChange }: {
     </div>
   );
 }
+
+type FormData = {
+  title: string;
+  artist: string;
+  language: string;
+  status: string;
+  youtubeUrl: string;
+  isPracticing: boolean;
+  hasPitchWarning: boolean;
+  categories: string[];
+};
+
+const defaultForm: FormData = {
+  title: "", artist: "", language: "日文", status: "已解鎖",
+  youtubeUrl: "", isPracticing: false, hasPitchWarning: false, categories: [],
+};
 
 function SongForm({ data, onChange, availableTags }: {
   data: FormData;
@@ -103,22 +140,6 @@ function SongForm({ data, onChange, availableTags }: {
   );
 }
 
-type FormData = {
-  title: string;
-  artist: string;
-  language: string;
-  status: string;
-  youtubeUrl: string;
-  isPracticing: boolean;
-  hasPitchWarning: boolean;
-  categories: string[];
-};
-
-const defaultForm: FormData = {
-  title: "", artist: "", language: "日文", status: "已解鎖",
-  youtubeUrl: "", isPracticing: false, hasPitchWarning: false, categories: [],
-};
-
 export default function AdminSongs() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -131,13 +152,19 @@ export default function AdminSongs() {
   const [previewData, setPreviewData] = useState<any>(null);
   const [confirmed, setConfirmed] = useState(false);
 
+  // Quick Add state
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [qaStep, setQaStep] = useState<"url" | "form">("url");
+  const [qaUrl, setQaUrl] = useState("");
+  const [qaResult, setQaResult] = useState<YouTubeAnalysis | null>(null);
+  const [qaForm, setQaForm] = useState<FormData>(defaultForm);
+
   const { data: songsData, isLoading } = useListSongs(
     { search: search || undefined, limit: 200 },
     { query: { queryKey: getListSongsQueryKey({ search: search || undefined, limit: 200 }) } }
   );
   const { data: categoriesData } = useListCategories();
 
-  // Collect all tags used in songs for the chip selector
   const availableTags = Array.from(new Set([
     ...(categoriesData?.categories.map(c => c.name) ?? []),
     ...(songsData?.songs.flatMap(s => s.categories ?? []) ?? []),
@@ -148,6 +175,7 @@ export default function AdminSongs() {
   const deleteSong = useDeleteSong();
   const importSheet = useImportFromGoogleSheet();
   const previewSheet = usePreviewGoogleSheetSync();
+  const analyzeUrl = useAnalyzeUrl();
 
   const invalidateSongs = () => queryClient.invalidateQueries({ queryKey: getListSongsQueryKey() });
 
@@ -229,6 +257,58 @@ export default function AdminSongs() {
     });
   };
 
+  // Quick Add handlers
+  const openQuickAdd = () => {
+    setQaStep("url");
+    setQaUrl("");
+    setQaResult(null);
+    setQaForm(defaultForm);
+    setIsQuickAddOpen(true);
+  };
+
+  const handleAnalyze = () => {
+    if (!qaUrl) return;
+    analyzeUrl.mutate({ data: { url: qaUrl } }, {
+      onSuccess: (data) => {
+        setQaResult(data);
+        setQaForm({
+          title: data.suggestedTitle,
+          artist: data.suggestedArtist,
+          language: "日文",
+          status: "🐣修練中",
+          youtubeUrl: data.youtubeUrl,
+          isPracticing: true,
+          hasPitchWarning: false,
+          categories: [],
+        });
+        setQaStep("form");
+      },
+      onError: (err: any) => {
+        const msg = err?.data?.error ?? "分析失敗，請確認網址正確且影片為公開";
+        toast.error(msg);
+      },
+    });
+  };
+
+  const handleQuickAddSave = () => {
+    createSong.mutate({
+      data: {
+        ...qaForm,
+        status: qaForm.status as any,
+        youtubeUrl: qaForm.youtubeUrl || null,
+        isPracticing: qaForm.status.includes("修練"),
+        hasPitchWarning: qaForm.categories.some(t => t.includes("破音")),
+      }
+    }, {
+      onSuccess: () => {
+        toast.success(`「${qaForm.title}」新增成功 🎵`);
+        setIsQuickAddOpen(false);
+        invalidateSongs();
+      },
+      onError: () => toast.error("新增失敗"),
+    });
+  };
+
   const StatusCell = ({ song }: { song: any }) => {
     const status = song.status || (song.isPracticing ? "🐣修練中" : "已解鎖");
     const hasPitch = song.categories?.some((t: string) => t.includes("破音")) || song.hasPitchWarning;
@@ -255,17 +335,15 @@ export default function AdminSongs() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">歌曲管理</h1>
-            <p className="text-[#4B5563] text-sm">管理歌單、或從 Google Sheet 同步。</p>
+            <p className="text-[#4B5563] text-sm">快速新增或管理歌單。</p>
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto flex-wrap">
             {/* Google Sheet Sync */}
             <Dialog open={isImportOpen} onOpenChange={v => { setIsImportOpen(v); if (!v) { setPreviewData(null); setConfirmed(false); }}}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5" data-testid="btn-open-import">
-                  <DownloadCloud className="w-4 h-4" />
-                  Google Sheet 同步
-                </Button>
-              </DialogTrigger>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setIsImportOpen(true)}>
+                <DownloadCloud className="w-4 h-4" />
+                Sheet 同步
+              </Button>
               <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
                   <DialogTitle className="text-[#243447]">從 Google Sheet 同步歌單</DialogTitle>
@@ -290,8 +368,6 @@ export default function AdminSongs() {
                     </div>
                     <p className="text-xs text-[#6B7280]">需設定為「知道連結的使用者皆可檢視」</p>
                   </div>
-
-                  {/* Preview result */}
                   {previewData && (
                     <div className="rounded-lg border border-border p-4 space-y-3"
                       style={{ background: "rgba(245,247,250,0.80)" }}>
@@ -326,26 +402,21 @@ export default function AdminSongs() {
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setIsImportOpen(false)}>取消</Button>
-                  <Button
-                    onClick={handleImport}
-                    disabled={!importUrl || !previewData || !confirmed || importSheet.isPending}
-                  >
+                  <Button onClick={handleImport} disabled={!importUrl || !previewData || !confirmed || importSheet.isPending}>
                     {importSheet.isPending ? "同步中..." : "開始同步"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
 
-            {/* Create song */}
+            {/* Manual create */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-1.5" onClick={() => setFormData(defaultForm)} data-testid="btn-open-create">
-                  <Plus className="w-4 h-4" />新增歌曲
-                </Button>
-              </DialogTrigger>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setFormData(defaultForm); setIsCreateOpen(true); }}>
+                <Plus className="w-4 h-4" />手動新增
+              </Button>
               <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
-                  <DialogTitle className="text-[#243447]">新增歌曲</DialogTitle>
+                  <DialogTitle className="text-[#243447]">手動新增歌曲</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
                   <SongForm data={formData} onChange={setFormData} availableTags={availableTags} />
@@ -358,6 +429,11 @@ export default function AdminSongs() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* Quick Add — primary */}
+            <Button size="sm" className="gap-1.5" onClick={openQuickAdd}>
+              <Zap className="w-4 h-4" />快速新增
+            </Button>
           </div>
         </div>
 
@@ -413,10 +489,10 @@ export default function AdminSongs() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(song)} className="h-8 w-8" data-testid={`btn-edit-${song.id}`}>
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(song)} className="h-8 w-8">
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(song.id)} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" data-testid={`btn-delete-${song.id}`}>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(song.id)} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -443,6 +519,154 @@ export default function AdminSongs() {
               儲存變更
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Add Dialog */}
+      <Dialog open={isQuickAddOpen} onOpenChange={open => {
+        setIsQuickAddOpen(open);
+        if (!open) { setQaStep("url"); setQaUrl(""); setQaResult(null); }
+      }}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle className="text-[#243447] flex items-center gap-2">
+              <Zap className="w-4 h-4 text-primary" />快速新增歌曲
+            </DialogTitle>
+          </DialogHeader>
+
+          {qaStep === "url" ? (
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label className="text-[#4B5563] font-medium">YouTube 影片網址</Label>
+                <Input
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={qaUrl}
+                  onChange={e => setQaUrl(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && qaUrl) handleAnalyze(); }}
+                  autoFocus
+                />
+                <p className="text-xs text-[#6B7280]">貼上 YouTube 網址，自動取得歌名與歌手</p>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setIsQuickAddOpen(false)}>取消</Button>
+                <Button onClick={handleAnalyze} disabled={!qaUrl || analyzeUrl.isPending}>
+                  {analyzeUrl.isPending ? (
+                    <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />分析中...</>
+                  ) : (
+                    <>分析影片 →</>
+                  )}
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="py-3 space-y-4">
+              {/* Thumbnail + original info */}
+              {qaResult && (
+                <div className="flex gap-3 p-3 rounded-xl border border-border/50" style={{ background: "rgba(245,247,250,0.70)" }}>
+                  {qaResult.thumbnailUrl && (
+                    <img
+                      src={qaResult.thumbnailUrl}
+                      alt="thumbnail"
+                      className="w-20 h-14 object-cover rounded-lg flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-[#6B7280] mb-0.5">原始標題</p>
+                    <p className="text-sm text-[#243447] font-medium leading-snug line-clamp-2">{qaResult.rawTitle}</p>
+                    <p className="text-xs text-[#6B7280] mt-1 truncate">頻道：{qaResult.channelName}</p>
+                    {qaResult.youtubeUrl && (
+                      <a href={qaResult.youtubeUrl} target="_blank" rel="noreferrer"
+                        className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5">
+                        <ExternalLink className="w-3 h-3" />在 YouTube 開啟
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Duplicate warning */}
+              {qaResult && qaResult.similarSongs.length > 0 && (
+                <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-200 bg-amber-50">
+                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">找到相似歌曲</p>
+                    {qaResult.similarSongs.slice(0, 3).map((s: any) => (
+                      <p key={s.id} className="text-xs text-amber-700 mt-0.5">
+                        「{s.title}」— {s.artist}
+                      </p>
+                    ))}
+                    <p className="text-xs text-amber-600 mt-1">可繼續新增，系統不會自動合併</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Editable form */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-[#4B5563]">歌名 <span className="text-destructive">*</span></Label>
+                    <div className="flex gap-1.5">
+                      <Input
+                        value={qaForm.title}
+                        onChange={e => setQaForm({ ...qaForm, title: e.target.value })}
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="flex-shrink-0 h-9 w-9"
+                        title="Auto Clean"
+                        onClick={() => setQaForm({ ...qaForm, title: cleanTitle(qaForm.title) })}
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-[#4B5563]">歌手</Label>
+                    <Input
+                      value={qaForm.artist}
+                      onChange={e => setQaForm({ ...qaForm, artist: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-[#4B5563]">語種</Label>
+                    <Select value={qaForm.language} onValueChange={v => setQaForm({ ...qaForm, language: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGES.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-[#4B5563]">狀態</Label>
+                    <Select value={qaForm.status} onValueChange={v => setQaForm({ ...qaForm, status: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium text-[#4B5563]">標籤</Label>
+                  <TagChips selected={qaForm.categories} available={availableTags} onChange={tags => setQaForm({ ...qaForm, categories: tags })} />
+                </div>
+              </div>
+
+              <DialogFooter className="pt-1">
+                <Button variant="ghost" size="sm" onClick={() => setQaStep("url")} className="gap-1 mr-auto">
+                  <ArrowLeft className="w-3.5 h-3.5" />重新輸入
+                </Button>
+                <Button variant="ghost" onClick={() => setIsQuickAddOpen(false)}>取消</Button>
+                <Button onClick={handleQuickAddSave} disabled={!qaForm.title || createSong.isPending}>
+                  {createSong.isPending ? "新增中..." : "確認新增"}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>

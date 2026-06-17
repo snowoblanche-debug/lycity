@@ -42,7 +42,11 @@ import type {
   SongList,
   SongUpdate,
   Stats,
-  SyncPreview
+  SyncPreview,
+  VerifyObsKey200,
+  VerifyObsKeyParams,
+  YouTubeAnalysis,
+  YouTubeUrlInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -506,6 +510,77 @@ export const useDeleteSong = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteSongMutationOptions(options));
+    }
+
+export const getAnalyzeUrlUrl = () => {
+
+
+
+
+  return `/api/songs/analyze-url`
+}
+
+/**
+ * @summary Analyze a YouTube URL and suggest song metadata
+ */
+export const analyzeUrl = async (youTubeUrlInput: YouTubeUrlInput, options?: RequestInit): Promise<YouTubeAnalysis> => {
+
+  return customFetch<YouTubeAnalysis>(getAnalyzeUrlUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      youTubeUrlInput,)
+  }
+);}
+
+
+
+
+export const getAnalyzeUrlMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeUrl>>, TError,{data: BodyType<YouTubeUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof analyzeUrl>>, TError,{data: BodyType<YouTubeUrlInput>}, TContext> => {
+
+const mutationKey = ['analyzeUrl'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzeUrl>>, {data: BodyType<YouTubeUrlInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  analyzeUrl(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzeUrlMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeUrl>>>
+    export type AnalyzeUrlMutationBody = BodyType<YouTubeUrlInput>
+    export type AnalyzeUrlMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Analyze a YouTube URL and suggest song metadata
+ */
+export const useAnalyzeUrl = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeUrl>>, TError,{data: BodyType<YouTubeUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof analyzeUrl>>,
+        TError,
+        {data: BodyType<YouTubeUrlInput>},
+        TContext
+      > => {
+      return useMutation(getAnalyzeUrlMutationOptions(options));
     }
 
 export const getPreviewGoogleSheetSyncUrl = () => {
@@ -1599,6 +1674,90 @@ export const useDeleteCategory = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getDeleteCategoryMutationOptions(options));
     }
+
+export const getVerifyObsKeyUrl = (params?: VerifyObsKeyParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/obs/verify?${stringifiedParams}` : `/api/obs/verify`
+}
+
+/**
+ * @summary Verify OBS access key
+ */
+export const verifyObsKey = async (params?: VerifyObsKeyParams, options?: RequestInit): Promise<VerifyObsKey200> => {
+
+  return customFetch<VerifyObsKey200>(getVerifyObsKeyUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getVerifyObsKeyQueryKey = (params?: VerifyObsKeyParams,) => {
+    return [
+    `/api/obs/verify`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getVerifyObsKeyQueryOptions = <TData = Awaited<ReturnType<typeof verifyObsKey>>, TError = ErrorType<unknown>>(params?: VerifyObsKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof verifyObsKey>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getVerifyObsKeyQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof verifyObsKey>>> = ({ signal }) => verifyObsKey(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof verifyObsKey>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type VerifyObsKeyQueryResult = NonNullable<Awaited<ReturnType<typeof verifyObsKey>>>
+export type VerifyObsKeyQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Verify OBS access key
+ */
+
+export function useVerifyObsKey<TData = Awaited<ReturnType<typeof verifyObsKey>>, TError = ErrorType<unknown>>(
+ params?: VerifyObsKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof verifyObsKey>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getVerifyObsKeyQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getGetSettingsUrl = () => {
 

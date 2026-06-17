@@ -14,4 +14,5 @@ export interface Settings {
   siteSubtitle?: string | null;
   /** @nullable */
   bannerText?: string | null;
+  obsKeyEnabled: boolean;
 }

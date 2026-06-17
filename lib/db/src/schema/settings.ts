@@ -8,6 +8,7 @@ export const settingsTable = pgTable("settings", {
   siteName: text("site_name").notNull().default("聆櫻聖境的點歌旋律"),
   siteSubtitle: text("site_subtitle"),
   bannerText: text("banner_text"),
+  obsKey: text("obs_key"),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 

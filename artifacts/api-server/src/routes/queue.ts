@@ -7,6 +7,7 @@ import {
   CompleteQueueItemParams,
   ReorderQueueBody,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middleware/auth";
 
 const router: IRouter = Router();
 
@@ -75,7 +76,7 @@ router.post("/queue", async (req, res): Promise<void> => {
   res.status(201).json({ ...item, song });
 });
 
-router.patch("/queue/reorder", async (req, res): Promise<void> => {
+router.patch("/queue/reorder", requireAdmin, async (req, res): Promise<void> => {
   const parsed = ReorderQueueBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   for (let i = 0; i < parsed.data.orderedIds.length; i++) {
@@ -108,7 +109,7 @@ router.get("/queue/current", async (_req, res): Promise<void> => {
   res.json({ current, next });
 });
 
-router.delete("/queue/:id", async (req, res): Promise<void> => {
+router.delete("/queue/:id", requireAdmin, async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = RemoveFromQueueParams.safeParse({ id: parseInt(raw, 10) });
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
@@ -117,7 +118,7 @@ router.delete("/queue/:id", async (req, res): Promise<void> => {
   res.sendStatus(204);
 });
 
-router.patch("/queue/:id/play", async (req, res): Promise<void> => {
+router.patch("/queue/:id/play", requireAdmin, async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.update(queueTable).set({ status: "waiting" }).where(eq(queueTable.status, "playing"));
@@ -127,7 +128,7 @@ router.patch("/queue/:id/play", async (req, res): Promise<void> => {
   res.json({ ...item, song: song ?? null });
 });
 
-router.patch("/queue/:id/skip", async (req, res): Promise<void> => {
+router.patch("/queue/:id/skip", requireAdmin, async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
@@ -150,7 +151,7 @@ router.patch("/queue/:id/skip", async (req, res): Promise<void> => {
   res.json(item);
 });
 
-router.patch("/queue/:id/complete", async (req, res): Promise<void> => {
+router.patch("/queue/:id/complete", requireAdmin, async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = CompleteQueueItemParams.safeParse({ id: parseInt(raw, 10) });
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }

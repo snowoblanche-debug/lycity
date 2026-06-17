@@ -1,8 +1,10 @@
 import { Link } from "wouter";
 import { useGetSettings } from "@workspace/api-client-react";
+import { useAuth } from "@/contexts/auth-context";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { data: settings } = useGetSettings();
+  const { isAdmin } = useAuth();
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex flex-col">
@@ -26,9 +28,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Link href="/history">
             <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">演唱紀錄</span>
           </Link>
-          <Link href="/admin">
-            <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">管理後台</span>
-          </Link>
+          {isAdmin && (
+            <Link href="/admin">
+              <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">管理後台</span>
+            </Link>
+          )}
         </nav>
       </header>
 

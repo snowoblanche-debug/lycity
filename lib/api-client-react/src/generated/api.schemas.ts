@@ -157,6 +157,7 @@ export interface Settings {
   siteSubtitle?: string | null;
   /** @nullable */
   bannerText?: string | null;
+  obsKeyEnabled: boolean;
 }
 
 export interface SettingsUpdate {
@@ -167,6 +168,22 @@ export interface SettingsUpdate {
   siteSubtitle?: string | null;
   /** @nullable */
   bannerText?: string | null;
+  /** @nullable */
+  obsKey?: string | null;
+}
+
+export interface YouTubeUrlInput {
+  url: string;
+}
+
+export interface YouTubeAnalysis {
+  rawTitle: string;
+  channelName: string;
+  thumbnailUrl: string;
+  youtubeUrl: string;
+  suggestedTitle: string;
+  suggestedArtist: string;
+  similarSongs: Song[];
 }
 
 export interface SongHistory {
@@ -251,5 +268,13 @@ limit?: number;
 export type ListHistoryParams = {
 page?: number;
 limit?: number;
+};
+
+export type VerifyObsKeyParams = {
+key?: string;
+};
+
+export type VerifyObsKey200 = {
+  valid: boolean;
 };
 

@@ -139,6 +139,25 @@ paths:
         "204":
           description: Song deleted
 
+  /songs/analyze-url:
+    post:
+      operationId: analyzeUrl
+      tags: [songs]
+      summary: Analyze a YouTube URL and suggest song metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/YouTubeUrlInput"
+      responses:
+        "200":
+          description: Analyzed YouTube metadata with song suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/YouTubeAnalysis"
+
   /songs/import/google-sheet/preview:
     post:
       operationId: previewGoogleSheetSync
@@ -403,6 +422,29 @@ paths:
         "204":
           description: Category deleted
 
+  /obs/verify:
+    get:
+      operationId: verifyObsKey
+      tags: [settings]
+      summary: Verify OBS access key
+      parameters:
+        - name: key
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Key verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [valid]
+                properties:
+                  valid:
+                    type: boolean
+
   /settings:
     get:
       operationId: getSettings
@@ -649,7 +691,7 @@ components:
 
     Settings:
       type: object
-      required: [bannerImageUrl, siteName]
+      required: [bannerImageUrl, siteName, obsKeyEnabled]
       properties:
         bannerImageUrl:
           type: ["string", "null"]
@@ -659,6 +701,8 @@ components:
           type: ["string", "null"]
         bannerText:
           type: ["string", "null"]
+        obsKeyEnabled:
+          type: boolean
 
     SettingsUpdate:
       type: object
@@ -671,6 +715,36 @@ components:
           type: ["string", "null"]
         bannerText:
           type: ["string", "null"]
+        obsKey:
+          type: ["string", "null"]
+
+    YouTubeUrlInput:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+
+    YouTubeAnalysis:
+      type: object
+      required: [rawTitle, channelName, thumbnailUrl, youtubeUrl, suggestedTitle, suggestedArtist, similarSongs]
+      properties:
+        rawTitle:
+          type: string
+        channelName:
+          type: string
+        thumbnailUrl:
+          type: string
+        youtubeUrl:
+          type: string
+        suggestedTitle:
+          type: string
+        suggestedArtist:
+          type: string
+        similarSongs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
 
     SongHistory:
       type: object

@@ -1,9 +1,13 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getGetCurrentPlayingQueryKey, useGetCurrentPlaying } from "@workspace/api-client-react";
+import { getGetCurrentPlayingQueryKey, useGetCurrentPlaying, useVerifyObsKey } from "@workspace/api-client-react";
+import { useSearch } from "wouter";
 
 export default function ObsPage() {
   const queryClient = useQueryClient();
+  const search = useSearch();
+  const urlKey = new URLSearchParams(search).get("key") ?? undefined;
+  const { data: verifyData, isLoading: verifying } = useVerifyObsKey({ key: urlKey });
   const { data: currentPlaying } = useGetCurrentPlaying();
 
   useEffect(() => {
@@ -21,6 +25,19 @@ export default function ObsPage() {
       document.body.style.backgroundColor = "";
     };
   }, []);
+
+  if (verifying) return null;
+
+  if (verifyData?.valid === false) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-transparent">
+        <div className="backdrop-blur-md bg-black/60 border border-white/10 rounded-2xl px-8 py-6 text-center">
+          <p className="text-white/80 text-lg font-medium">🔒 存取遭拒</p>
+          <p className="text-white/50 text-sm mt-1">OBS 存取金鑰無效</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col p-8 gap-8 overflow-hidden bg-transparent">

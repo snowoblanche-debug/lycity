@@ -6,10 +6,12 @@ import categoriesRouter from "./categories";
 import settingsRouter from "./settings";
 import statsRouter from "./stats";
 import historyRouter from "./history";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(adminRouter);
 router.use(songsRouter);
 router.use(queueRouter);
 router.use(categoriesRouter);

@@ -10,6 +10,7 @@ import {
   DeleteSongParams,
   ImportFromGoogleSheetBody,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middleware/auth";
 
 const router: IRouter = Router();
 
@@ -76,6 +77,63 @@ async function fetchSheet(sheetUrl: string) {
   return { cols, dataLines, rowsDetected: dataLines.length };
 }
 
+// YouTube title parsing helpers
+function cleanYouTubeTitle(title: string): string {
+  let t = title;
+  // Remove bracketed junk: 【...】,（...）,(...) containing common terms
+  t = t.replace(/[【（(【\[][^\]】）)]*(?:Cover|Lyrics|動態歌詞|Official\s*(?:Video|MV|Audio)|MV|Karaoke|カラオケ|翻唱|原唱|伴奏|歌詞|字幕|HD|4K)[^\]】）)]*[\]】）)]/gi, "");
+  // Remove trailing patterns
+  const patterns: RegExp[] = [
+    /[\s\-–|｜]+(?:Official\s+)?(?:Music\s+Video|Video|MV|Audio)$/gi,
+    /[\s\-–|｜]+Lyrics?$/gi,
+    /[\s\-–|｜]+動態歌詞$/g,
+    /[\s\-–|｜]+Cover$/gi,
+    /[\s\-–|｜]+Karaoke$/gi,
+    /[\s\-–|｜]+原唱$/g,
+    /[\s\-–|｜]+翻唱$/g,
+    /[\s\-–|｜]+伴奏$/g,
+    /[\s\-–|｜]+歌詞$/g,
+  ];
+  for (const p of patterns) t = t.replace(p, "");
+  return t.trim();
+}
+
+function parseYouTubeTitle(rawTitle: string, channelName: string): { songTitle: string; artist: string } {
+  const cleaned = cleanYouTubeTitle(rawTitle);
+
+  // Try "Artist - Song Title" or "Song - Artist" split on " - "
+  const dashMatch = cleaned.match(/^(.+?)\s*[-–]\s*(.+)$/);
+  if (dashMatch) {
+    const [, left, right] = dashMatch;
+    const cleanLeft = cleanYouTubeTitle(left.trim());
+    const cleanRight = cleanYouTubeTitle(right.trim());
+
+    // If channel name strongly matches left → left is artist, right is song
+    const channelNorm = channelName.toLowerCase().replace(/\s*(official|records|music|vevo|channel)\s*/gi, "").trim();
+    const leftNorm = cleanLeft.toLowerCase();
+    if (channelNorm.length >= 3 && leftNorm.includes(channelNorm.substring(0, Math.min(5, channelNorm.length)))) {
+      return { songTitle: cleanRight, artist: cleanLeft };
+    }
+    // Default: assume "Artist - Song"
+    return { songTitle: cleanRight, artist: cleanLeft };
+  }
+
+  // Try "Song / Artist" split
+  const slashMatch = cleaned.match(/^(.+?)\s*[/／]\s*(.+)$/);
+  if (slashMatch) {
+    return {
+      songTitle: cleanYouTubeTitle(slashMatch[1].trim()),
+      artist: cleanYouTubeTitle(slashMatch[2].trim()),
+    };
+  }
+
+  // Fallback: full title as song name, clean channel as artist
+  const cleanChannel = channelName
+    .replace(/\s*(Official|Records|Music|VEVO|Channel|JP|official)\s*/gi, "")
+    .trim();
+  return { songTitle: cleaned, artist: cleanChannel };
+}
+
 // --- Routes ---
 
 router.get("/songs", async (req, res): Promise<void> => {
@@ -103,7 +161,7 @@ router.get("/songs", async (req, res): Promise<void> => {
   res.json({ songs, total: Number(count ?? 0), page, limit });
 });
 
-router.post("/songs", async (req, res): Promise<void> => {
+router.post("/songs", requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateSongBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
@@ -122,8 +180,56 @@ router.post("/songs", async (req, res): Promise<void> => {
   res.status(201).json(song);
 });
 
+// Analyze YouTube URL — returns metadata suggestions (public endpoint, no auth needed)
+router.post("/songs/analyze-url", async (req, res): Promise<void> => {
+  const { url } = req.body as { url?: string };
+  if (!url || typeof url !== "string") {
+    res.status(400).json({ error: "URL is required" });
+    return;
+  }
+
+  if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
+    res.status(400).json({ error: "請提供有效的 YouTube 網址" });
+    return;
+  }
+
+  const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+  let oembedData: { title: string; author_name: string; thumbnail_url: string };
+
+  try {
+    const response = await fetch(oembedUrl);
+    if (!response.ok) {
+      res.status(400).json({ error: "無法取得影片資訊，請確認影片公開且網址正確" });
+      return;
+    }
+    oembedData = await response.json() as typeof oembedData;
+  } catch {
+    res.status(400).json({ error: "無法連線至 YouTube，請稍後再試" });
+    return;
+  }
+
+  const { songTitle, artist } = parseYouTubeTitle(oembedData.title, oembedData.author_name);
+
+  // Duplicate check — find songs with similar title
+  const titleSearch = songTitle.substring(0, Math.min(songTitle.length, 10));
+  const similarSongs = await db.select()
+    .from(songsTable)
+    .where(ilike(songsTable.title, `%${titleSearch}%`))
+    .limit(5);
+
+  res.json({
+    rawTitle: oembedData.title,
+    channelName: oembedData.author_name,
+    thumbnailUrl: oembedData.thumbnail_url,
+    youtubeUrl: url,
+    suggestedTitle: songTitle,
+    suggestedArtist: artist,
+    similarSongs,
+  });
+});
+
 // Preview MUST come before /import/google-sheet (longer path first)
-router.post("/songs/import/google-sheet/preview", async (req, res): Promise<void> => {
+router.post("/songs/import/google-sheet/preview", requireAdmin, async (req, res): Promise<void> => {
   const parsed = ImportFromGoogleSheetBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
@@ -159,7 +265,7 @@ router.post("/songs/import/google-sheet/preview", async (req, res): Promise<void
   }
 });
 
-router.post("/songs/import/google-sheet", async (req, res): Promise<void> => {
+router.post("/songs/import/google-sheet", requireAdmin, async (req, res): Promise<void> => {
   const parsed = ImportFromGoogleSheetBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
@@ -229,7 +335,7 @@ router.get("/songs/:id", async (req, res): Promise<void> => {
   res.json(song);
 });
 
-router.patch("/songs/:id", async (req, res): Promise<void> => {
+router.patch("/songs/:id", requireAdmin, async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const params = UpdateSongParams.safeParse({ id: parseInt(raw, 10) });
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
@@ -251,7 +357,7 @@ router.patch("/songs/:id", async (req, res): Promise<void> => {
   res.json(song);
 });
 
-router.delete("/songs/:id", async (req, res): Promise<void> => {
+router.delete("/songs/:id", requireAdmin, async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = DeleteSongParams.safeParse({ id: parseInt(raw, 10) });
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }

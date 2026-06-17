@@ -37,3 +37,7 @@ export * from './statsLanguageBreakdownItem';
 export * from './statsMonthly';
 export * from './statsMonthlyTopLanguagesItem';
 export * from './syncPreview';
+export * from './verifyObsKey200';
+export * from './verifyObsKeyParams';
+export * from './youTubeAnalysis';
+export * from './youTubeUrlInput';
