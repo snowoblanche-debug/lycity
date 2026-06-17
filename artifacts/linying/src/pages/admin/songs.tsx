@@ -235,6 +235,13 @@ export default function AdminSongs() {
     }
   };
 
+  const handleInlineUpdate = (id: number, patch: Record<string, unknown>) => {
+    updateSong.mutate({ id, data: patch as any }, {
+      onSuccess: () => invalidateSongs(),
+      onError: () => toast.error("更新失敗"),
+    });
+  };
+
   const handlePreview = () => {
     if (!importUrl) return;
     previewSheet.mutate({ data: { sheetUrl: importUrl } }, {
@@ -472,9 +479,25 @@ export default function AdminSongs() {
                     <TableCell className="font-medium text-[#243447] max-w-[160px] truncate">{song.title}</TableCell>
                     <TableCell className="text-[#4B5563]">{song.artist || "—"}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-xs text-[#4B5563] border-border">{song.language}</Badge>
+                      <Select value={song.language} onValueChange={v => handleInlineUpdate(song.id, { language: v })}>
+                        <SelectTrigger className="h-7 text-xs w-[90px] border-border/60">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LANGUAGES.map(l => <SelectItem key={l} value={l} className="text-xs">{l}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
-                    <TableCell><StatusCell song={song} /></TableCell>
+                    <TableCell>
+                      <Select value={(song as any).status || "已解鎖"} onValueChange={v => handleInlineUpdate(song.id, { status: v })}>
+                        <SelectTrigger className="h-7 text-xs w-[120px] border-border/60">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUSES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1 max-w-[180px]">
                         {(song.categories ?? []).slice(0, 4).map((tag: string) => (

@@ -11,6 +11,8 @@ export interface SongUpdate {
   artist?: string;
   language?: string;
   status?: string;
+  /** @nullable */
+  primaryTag?: string | null;
   categories?: string[];
   /** @nullable */
   youtubeUrl?: string | null;

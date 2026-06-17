@@ -1,13 +1,15 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LayoutDashboard, Music, ListMusic, ListOrdered, Settings, ChevronLeft, History } from "lucide-react";
+import { LayoutDashboard, Music, ListMusic, ListOrdered, Settings, ChevronLeft, History, Users, FlaskConical } from "lucide-react";
+import { useGetSettings } from "@workspace/api-client-react";
 
 const sidebarNavItems = [
   { title: "概覽", href: "/admin", icon: LayoutDashboard },
   { title: "歌曲管理", href: "/admin/songs", icon: Music },
   { title: "分類管理", href: "/admin/categories", icon: ListMusic },
   { title: "點歌管理", href: "/admin/queue", icon: ListOrdered },
+  { title: "點歌排行", href: "/admin/requester-stats", icon: Users },
   { title: "演唱紀錄", href: "/history", icon: History },
   { title: "系統設定", href: "/admin/settings", icon: Settings },
 ];
@@ -57,6 +59,18 @@ export function AdminSidebar() {
   );
 }
 
+function TestModeBanner() {
+  const { data: settings } = useGetSettings();
+  if (!settings?.testMode) return null;
+  return (
+    <div className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium"
+      style={{ background: "rgba(245,158,11,0.12)", borderBottom: "1px solid rgba(245,158,11,0.30)", color: "#92400e" }}>
+      <FlaskConical className="w-4 h-4 flex-shrink-0" />
+      <span>測試模式已開啟 — 本次演唱將不計入播放統計與演唱紀錄</span>
+    </div>
+  );
+}
+
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex relative overflow-hidden">
@@ -65,10 +79,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       />
       <div className="relative z-10 flex w-full h-screen">
         <AdminSidebar />
-        <main className="flex-1 overflow-auto p-8 bg-transparent">
-          <div className="max-w-6xl mx-auto rounded-2xl shadow-lg min-h-[calc(100vh-4rem)] p-7"
-            style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", border: "1px solid rgba(112,136,163,0.18)" }}>
-            {children}
+        <main className="flex-1 overflow-auto bg-transparent flex flex-col">
+          <TestModeBanner />
+          <div className="flex-1 p-8">
+            <div className="max-w-6xl mx-auto rounded-2xl shadow-lg min-h-[calc(100vh-8rem)] p-7"
+              style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", border: "1px solid rgba(112,136,163,0.18)" }}>
+              {children}
+            </div>
           </div>
         </main>
       </div>

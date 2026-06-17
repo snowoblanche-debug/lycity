@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -9,6 +9,7 @@ export const settingsTable = pgTable("settings", {
   siteSubtitle: text("site_subtitle"),
   bannerText: text("banner_text"),
   obsKey: text("obs_key"),
+  testMode: boolean("test_mode").notNull().default(false),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 

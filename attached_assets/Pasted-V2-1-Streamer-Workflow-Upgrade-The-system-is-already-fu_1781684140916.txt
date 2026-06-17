@@ -1,0 +1,451 @@
+V2.1 Streamer Workflow Upgrade
+
+The system is already functional.
+
+Please optimize for real-world VTuber / streamer daily usage.
+
+Core priorities:
+
+Streamer convenience
+Accurate statistics
+Fast song management
+Long-term maintainability
+Future scalability
+FEATURE 1 — TEST MODE (Highest Priority)
+
+Add:
+
+System Settings
+
+System Mode
+
+● Production Mode
+○ Test Mode
+
+When Test Mode is enabled:
+
+Allowed:
+
+Queue songs
+Mark Playing
+Complete Song
+OBS Overlay works normally
+
+But:
+
+DO NOT increase sing_count
+DO NOT create song_history
+DO NOT increase monthly statistics
+DO NOT increase lifetime statistics
+
+Show global banner:
+
+🧪 TEST MODE
+
+All actions are ignored from official statistics.
+
+FEATURE 2 — REBUILD STATISTICS
+
+Add:
+
+System Tools
+
+Button:
+
+Rebuild Statistics
+
+Workflow:
+
+song_history
+↓
+recalculate
+↓
+songs.sing_count
+↓
+monthly statistics
+↓
+lifetime statistics
+
+Purpose:
+
+Fix bad imports
+Fix testing contamination
+Recover corrupted stats
+
+Show result:
+
+Songs Updated
+Monthly Stats Rebuilt
+Lifetime Stats Rebuilt
+
+FEATURE 3 — ADMIN QUICK ACCESS
+
+Dashboard should become a real control center.
+
+Add quick action cards:
+
+🎵 Song Management
+
+📋 Queue Management
+
+📜 Song History
+
+🏷 Tag Management
+
+⚙ System Settings
+
+One click navigation.
+
+FEATURE 4 — INLINE TABLE EDITING
+
+Current workflow:
+
+Edit Button
+↓
+Modal
+↓
+Save
+
+Too slow.
+
+Allow direct editing inside table.
+
+Language:
+
+Dropdown directly in row
+
+Status:
+
+Dropdown directly in row
+
+Examples:
+
+已解鎖
+
+🐣修練中
+
+👑招牌曲
+
+🎤高完成度
+
+❄️季節限定
+
+Changes should save immediately.
+
+FEATURE 5 — PRIMARY TAG + SECONDARY TAGS
+
+Current tag system treats all tags equally.
+
+Please redesign.
+
+Each song should support:
+
+Primary Tag (single)
+
+Secondary Tags (multiple)
+
+Example:
+
+Song:
+妥協
+
+Primary Tag:
+
+抒情
+
+Secondary Tags:
+
+EMO
+神曲
+
+Homepage category filter should prioritize Primary Tag.
+
+Search should support both Primary and Secondary Tags.
+
+FEATURE 6 — SMART YOUTUBE PARSER
+
+Current YouTube parsing is not smart enough.
+
+Example:
+
+Current:
+
+不是花火呀 - Ring Ring Ring (原唱：SHE)「拉長耳朵提高警覺...」
+
+Desired:
+
+Artist:
+
+不是花火呀
+
+Song Name:
+
+Ring Ring Ring
+
+Create Smart Title Cleaner.
+
+Remove patterns:
+
+Original Singer
+原唱
+Cover
+Official Video
+Official MV
+MV
+Lyrics
+動態歌詞
+字幕版
+完整版
+高音質
+Karaoke
+伴奏版
+
+Keep manual editing available.
+
+FEATURE 7 — REQUESTER HISTORY
+
+No account required.
+
+Keep simple name input.
+
+Store:
+
+requester
+
+inside:
+
+queue
+song_history
+
+Create:
+
+requester_stats
+
+Fields:
+
+id
+requester_name
+request_count
+last_request_at
+
+Add Admin Page:
+
+觀眾排行榜
+
+Example:
+
+David — 98 requests
+
+吐司 — 56 requests
+
+阿貓 — 34 requests
+
+Clicking a requester should show:
+
+Requested Songs
+Request Count
+Last Request Time
+
+FEATURE 8 — ACCESSIBILITY PASS
+
+Some pages still have severe readability issues.
+
+Apply WCAG AA compliance.
+
+Colors:
+
+Primary Text
+
+#243447
+
+Secondary Text
+
+#4B5563
+
+Muted Text
+
+#6B7280
+
+Rules:
+
+Never use opacity below 80%.
+
+Apply to:
+
+Category Management
+Settings
+Dashboard
+Tables
+Forms
+Statistics Cards
+Modals
+
+Table Headers:
+
+font-weight: 700
+
+FEATURE 9 — IMPROVED STATISTICS
+
+Current statistics are still partially influenced by imported song data.
+
+Statistics should be based primarily on song_history.
+
+Separate:
+
+Monthly Statistics
+
+Show:
+
+本月演唱數
+
+本月新增歌曲
+
+本月熱門歌曲
+
+本月熱門語種
+
+Lifetime Statistics
+
+Show:
+
+總演唱數
+
+總歌曲數
+
+總點歌數
+
+歷史熱門歌曲
+
+Recent Activity
+
+Last 10 Completed Songs
+
+FEATURE 10 — HOMEPAGE IMPROVEMENT
+
+Current homepage already shows Now Playing.
+
+Enhance layout:
+
+Banner
+
+↓
+
+🎵 現正演唱
+
+Song Name
+
+Artist
+
+Requester
+
+↓
+
+Song Search
+
+↓
+
+Queue
+
+Now Playing should always be visible above the fold.
+
+FEATURE 11 — STATUS MANAGEMENT IMPROVEMENT
+
+Current status badges are good.
+
+Allow status editing directly from table.
+
+No modal required.
+
+Examples:
+
+已解鎖
+
+🐣修練中
+
+👑招牌曲
+
+🎤高完成度
+
+❄️季節限定
+
+Save instantly.
+
+FEATURE 12 — FUTURE-PROOF DATABASE
+
+Prepare architecture only.
+
+Do NOT fully implement yet.
+
+Reserve support for:
+
+Twitch Channel Points
+
+YouTube Auto Metadata
+
+VOD Timestamps
+
+OBS Overlay Enhancements
+
+Song Ranking
+
+Seasonal Playlists
+
+Member-only Songs
+
+Future Loyalty Point System
+
+FEATURE 13 — DATABASE REVIEW
+
+After implementation please show:
+
+Database Schema
+
+songs
+
+tags
+
+song_tags
+
+queue
+
+song_history
+
+requester_stats
+
+settings
+
+And explain:
+
+Statistics calculation logic
+Test Mode logic
+Rebuild Statistics logic
+IMPORTANT
+
+The system should be optimized for a VTuber with:
+
+300–1000 songs
+
+Frequent singing streams
+
+Long-term growth
+
+The website should be the operating interface.
+
+The database should remain clean and recoverable.
+
+Streamer convenience is more important than adding visual effects.
+
+另外再補一句：
+
+Please review the current tag architecture.
+
+I may no longer use Google Sheets.
+
+Song management will primarily happen inside the website.
+
+Recommend whether tags should remain fully dynamic or be converted into:
+
+Primary Tag (single select)
+Secondary Tags (multi select)
+
+based on long-term maintainability for a 1000-song library.

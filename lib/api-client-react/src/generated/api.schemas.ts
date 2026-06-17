@@ -15,6 +15,8 @@ export interface Song {
   artist: string;
   language: string;
   playCount: number;
+  /** @nullable */
+  primaryTag?: string | null;
   categories: string[];
   /** @nullable */
   youtubeUrl: string | null;
@@ -29,6 +31,8 @@ export interface SongInput {
   artist: string;
   language: string;
   status?: string;
+  /** @nullable */
+  primaryTag?: string | null;
   categories?: string[];
   /** @nullable */
   youtubeUrl?: string | null;
@@ -41,6 +45,8 @@ export interface SongUpdate {
   artist?: string;
   language?: string;
   status?: string;
+  /** @nullable */
+  primaryTag?: string | null;
   categories?: string[];
   /** @nullable */
   youtubeUrl?: string | null;
@@ -158,6 +164,7 @@ export interface Settings {
   /** @nullable */
   bannerText?: string | null;
   obsKeyEnabled: boolean;
+  testMode: boolean;
 }
 
 export interface SettingsUpdate {
@@ -170,6 +177,7 @@ export interface SettingsUpdate {
   bannerText?: string | null;
   /** @nullable */
   obsKey?: string | null;
+  testMode?: boolean;
 }
 
 export interface YouTubeUrlInput {
@@ -235,6 +243,23 @@ export interface Stats {
   monthly?: StatsMonthly;
 }
 
+export interface RequesterStat {
+  id: number;
+  requesterName: string;
+  requestCount: number;
+  lastRequestAt: string;
+}
+
+export interface RequesterStatList {
+  items: RequesterStat[];
+  total: number;
+}
+
+export interface RebuildStatsResult {
+  songsUpdated: number;
+  message: string;
+}
+
 export interface GoogleSheetImport {
   sheetUrl: string;
   /** @nullable */
@@ -261,6 +286,7 @@ export type ListSongsParams = {
 search?: string;
 language?: string;
 category?: string;
+primaryTag?: string;
 page?: number;
 limit?: number;
 };
@@ -276,5 +302,9 @@ key?: string;
 
 export type VerifyObsKey200 = {
   valid: boolean;
+};
+
+export type ListRequestersParams = {
+limit?: number;
 };
 

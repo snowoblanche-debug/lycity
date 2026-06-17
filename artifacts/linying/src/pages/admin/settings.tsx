@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useGetSettings, useUpdateSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
+import { useGetSettings, useUpdateSettings, getGetSettingsQueryKey, useRebuildStats } from "@workspace/api-client-react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, ExternalLink, Eye, EyeOff, Copy, RefreshCw } from "lucide-react";
+import { Save, ExternalLink, Eye, EyeOff, Copy, RefreshCw, FlaskConical, BarChart3, CheckCircle2 } from "lucide-react";
 
 export default function AdminSettings() {
   const queryClient = useQueryClient();
   const { data: settings, isLoading } = useGetSettings();
   const updateSettings = useUpdateSettings();
+  const rebuildStats = useRebuildStats();
 
   const [formData, setFormData] = useState({
     siteName: "",
@@ -24,6 +26,8 @@ export default function AdminSettings() {
   const [obsKeyLoading, setObsKeyLoading] = useState(false);
   const [obsKeyLoaded, setObsKeyLoaded] = useState(false);
   const [showObsKey, setShowObsKey] = useState(false);
+  const [testMode, setTestMode] = useState(false);
+  const [rebuildResult, setRebuildResult] = useState<{ songsUpdated: number; message: string } | null>(null);
 
   useEffect(() => {
     if (settings) {
@@ -32,6 +36,7 @@ export default function AdminSettings() {
         siteSubtitle: (settings as { siteSubtitle?: string | null }).siteSubtitle || "",
         bannerImageUrl: settings.bannerImageUrl || ""
       });
+      setTestMode(settings.testMode ?? false);
     }
   }, [settings]);
 
@@ -59,12 +64,37 @@ export default function AdminSettings() {
         siteSubtitle: formData.siteSubtitle || null,
         bannerImageUrl: formData.bannerImageUrl || null,
         obsKey: obsKey || null,
+        testMode,
       } as any
     }, {
       onSuccess: () => {
         toast.success("設定已儲存");
         queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
       }
+    });
+  };
+
+  const handleTestModeToggle = (val: boolean) => {
+    setTestMode(val);
+    updateSettings.mutate({
+      data: { testMode: val } as any
+    }, {
+      onSuccess: () => {
+        toast.success(val ? "測試模式已開啟 — 演唱將不計入統計" : "測試模式已關閉");
+        queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
+      }
+    });
+  };
+
+  const handleRebuildStats = () => {
+    setRebuildResult(null);
+    rebuildStats.mutate(undefined, {
+      onSuccess: (data) => {
+        setRebuildResult(data as any);
+        toast.success(`統計重建完成：已更新 ${(data as any).songsUpdated} 首歌曲`);
+        queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
+      },
+      onError: () => toast.error("統計重建失敗，請稍後再試"),
     });
   };
 
@@ -91,6 +121,71 @@ export default function AdminSettings() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">系統設定</h1>
           <p className="text-muted-foreground text-sm">自訂你的點歌頁面外觀與安全設定。</p>
         </div>
+
+        {/* Test Mode */}
+        <Card className="border-border/60 shadow-sm">
+          <CardHeader className="px-6 pt-6 pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <FlaskConical className="w-4 h-4 text-amber-500" />
+                  測試模式
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  開啟後，標記演唱完成時將<strong>不計入</strong>播放次數與演唱紀錄。適合串流前測試。
+                </CardDescription>
+              </div>
+              <Switch
+                checked={testMode}
+                onCheckedChange={handleTestModeToggle}
+                disabled={updateSettings.isPending}
+              />
+            </div>
+          </CardHeader>
+          {testMode && (
+            <CardContent className="px-6 pb-5">
+              <div className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg"
+                style={{ background: "rgba(245,158,11,0.10)", color: "#92400e", border: "1px solid rgba(245,158,11,0.25)" }}>
+                <FlaskConical className="w-3.5 h-3.5 flex-shrink-0" />
+                目前處於測試模式，演唱完成不會記錄到統計中。
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Rebuild Stats */}
+        <Card className="border-border/60 shadow-sm">
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              重建播放統計
+            </CardTitle>
+            <CardDescription>
+              從演唱紀錄重新計算所有歌曲的播放次數。適合在資料異常或測試後清理時使用。
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-6 pb-5 space-y-4">
+            {rebuildResult && (
+              <div className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg"
+                style={{ background: "rgba(34,197,94,0.08)", color: "#166534", border: "1px solid rgba(34,197,94,0.20)" }}>
+                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                {rebuildResult.message}
+              </div>
+            )}
+            <Button
+              variant="outline"
+              onClick={handleRebuildStats}
+              disabled={rebuildStats.isPending}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${rebuildStats.isPending ? 'animate-spin' : ''}`} />
+              {rebuildStats.isPending ? "重建中..." : "立即重建統計"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              此操作會重設所有歌曲的 play_count 欄位，以演唱紀錄中的資料為準。
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Page text */}
         <Card className="border-border/60 shadow-sm">

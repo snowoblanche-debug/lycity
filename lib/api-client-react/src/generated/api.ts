@@ -29,11 +29,14 @@ import type {
   HealthStatus,
   ImportResult,
   ListHistoryParams,
+  ListRequestersParams,
   ListSongsParams,
   QueueItem,
   QueueItemInput,
   QueueList,
   QueueReorder,
+  RebuildStatsResult,
+  RequesterStatList,
   Settings,
   SettingsUpdate,
   Song,
@@ -1983,4 +1986,158 @@ export function useGetStats<TData = Awaited<ReturnType<typeof getStats>>, TError
 
 
 
+
+export const getListRequestersUrl = (params?: ListRequestersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/requesters?${stringifiedParams}` : `/api/admin/requesters`
+}
+
+/**
+ * @summary List requester stats sorted by request count
+ */
+export const listRequesters = async (params?: ListRequestersParams, options?: RequestInit): Promise<RequesterStatList> => {
+
+  return customFetch<RequesterStatList>(getListRequestersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRequestersQueryKey = (params?: ListRequestersParams,) => {
+    return [
+    `/api/admin/requesters`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListRequestersQueryOptions = <TData = Awaited<ReturnType<typeof listRequesters>>, TError = ErrorType<unknown>>(params?: ListRequestersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRequesters>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRequestersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRequesters>>> = ({ signal }) => listRequesters(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRequesters>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListRequestersQueryResult = NonNullable<Awaited<ReturnType<typeof listRequesters>>>
+export type ListRequestersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List requester stats sorted by request count
+ */
+
+export function useListRequesters<TData = Awaited<ReturnType<typeof listRequesters>>, TError = ErrorType<unknown>>(
+ params?: ListRequestersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRequesters>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListRequestersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getRebuildStatsUrl = () => {
+
+
+
+
+  return `/api/admin/stats/rebuild`
+}
+
+/**
+ * @summary Rebuild all statistics from song_history (admin only)
+ */
+export const rebuildStats = async ( options?: RequestInit): Promise<RebuildStatsResult> => {
+
+  return customFetch<RebuildStatsResult>(getRebuildStatsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getRebuildStatsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rebuildStats>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof rebuildStats>>, TError,void, TContext> => {
+
+const mutationKey = ['rebuildStats'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rebuildStats>>, void> = () => {
+
+
+          return  rebuildStats(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RebuildStatsMutationResult = NonNullable<Awaited<ReturnType<typeof rebuildStats>>>
+
+    export type RebuildStatsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Rebuild all statistics from song_history (admin only)
+ */
+export const useRebuildStats = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rebuildStats>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof rebuildStats>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRebuildStatsMutationOptions(options));
+    }
 

@@ -14,6 +14,7 @@ async function getOrCreateSettings() {
     siteSubtitle: "點播喜歡的歌曲，一起留下今晚的旋律",
     bannerImageUrl: null,
     bannerText: null,
+    testMode: false,
   }).returning();
   return settings;
 }
@@ -26,6 +27,7 @@ router.get("/settings", async (_req, res): Promise<void> => {
     siteSubtitle: settings.siteSubtitle,
     bannerText: settings.bannerText,
     obsKeyEnabled: !!settings.obsKey,
+    testMode: settings.testMode,
   });
 });
 
@@ -46,6 +48,9 @@ router.patch("/settings", requireAdmin, async (req, res): Promise<void> => {
   if ((req.body as { obsKey?: string | null }).obsKey !== undefined) {
     updateData["obsKey"] = (req.body as { obsKey?: string | null }).obsKey || null;
   }
+  if ((req.body as { testMode?: boolean }).testMode !== undefined) {
+    updateData["testMode"] = !!(req.body as { testMode?: boolean }).testMode;
+  }
 
   const [updated] = await db.update(settingsTable)
     .set(updateData)
@@ -60,6 +65,7 @@ router.patch("/settings", requireAdmin, async (req, res): Promise<void> => {
     siteSubtitle: result.siteSubtitle,
     bannerText: result.bannerText,
     obsKeyEnabled: !!result.obsKey,
+    testMode: result.testMode,
   });
 });
 

@@ -16,4 +16,5 @@ export interface SettingsUpdate {
   bannerText?: string | null;
   /** @nullable */
   obsKey?: string | null;
+  testMode?: boolean;
 }

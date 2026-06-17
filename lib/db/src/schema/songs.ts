@@ -8,6 +8,7 @@ export const songsTable = pgTable("songs", {
   artist: text("artist").notNull(),
   language: text("language").notNull().default("日語"),
   playCount: integer("play_count").notNull().default(0),
+  primaryTag: text("primary_tag"),
   categories: jsonb("categories").$type<string[]>().notNull().default([]),
   youtubeUrl: text("youtube_url"),
   status: text("status").notNull().default("已解鎖"),

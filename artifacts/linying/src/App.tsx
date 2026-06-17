@@ -15,6 +15,7 @@ import AdminSongs from "@/pages/admin/songs";
 import AdminCategories from "@/pages/admin/categories";
 import AdminQueue from "@/pages/admin/queue";
 import AdminSettings from "@/pages/admin/settings";
+import AdminRequesterStats from "@/pages/admin/requester-stats";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const ProtectedAdminSongs = withAdminGuard(AdminSongs);
 const ProtectedAdminCategories = withAdminGuard(AdminCategories);
 const ProtectedAdminQueue = withAdminGuard(AdminQueue);
 const ProtectedAdminSettings = withAdminGuard(AdminSettings);
+const ProtectedAdminRequesterStats = withAdminGuard(AdminRequesterStats);
 
 function Router() {
   return (
@@ -37,6 +39,7 @@ function Router() {
       <Route path="/admin/categories" component={ProtectedAdminCategories} />
       <Route path="/admin/queue" component={ProtectedAdminQueue} />
       <Route path="/admin/settings" component={ProtectedAdminSettings} />
+      <Route path="/admin/requester-stats" component={ProtectedAdminRequesterStats} />
 
       <Route component={NotFound} />
     </Switch>

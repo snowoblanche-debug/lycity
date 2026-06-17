@@ -15,4 +15,5 @@ export interface Settings {
   /** @nullable */
   bannerText?: string | null;
   obsKeyEnabled: boolean;
+  testMode: boolean;
 }

@@ -12,6 +12,8 @@ export interface Song {
   artist: string;
   language: string;
   playCount: number;
+  /** @nullable */
+  primaryTag?: string | null;
   categories: string[];
   /** @nullable */
   youtubeUrl: string | null;

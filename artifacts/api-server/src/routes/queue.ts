@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, asc, sql, inArray } from "drizzle-orm";
-import { db, queueTable, songsTable, songHistoryTable } from "@workspace/db";
+import { db, queueTable, songsTable, songHistoryTable, settingsTable, requesterStatsTable } from "@workspace/db";
 import {
   AddToQueueBody,
   RemoveFromQueueParams,
@@ -17,12 +17,18 @@ const songSelect = {
   artist: songsTable.artist,
   language: songsTable.language,
   playCount: songsTable.playCount,
+  primaryTag: songsTable.primaryTag,
   categories: songsTable.categories,
   youtubeUrl: songsTable.youtubeUrl,
   isPracticing: songsTable.isPracticing,
   hasPitchWarning: songsTable.hasPitchWarning,
   createdAt: songsTable.createdAt,
 };
+
+async function isTestMode(): Promise<boolean> {
+  const rows = await db.select({ testMode: settingsTable.testMode }).from(settingsTable).limit(1);
+  return rows[0]?.testMode ?? false;
+}
 
 // Only show active (waiting/playing) items — excludes completed and skipped
 async function getActiveQueueWithSongs() {
@@ -41,6 +47,20 @@ async function getActiveQueueWithSongs() {
     .leftJoin(songsTable, eq(queueTable.songId, songsTable.id))
     .where(inArray(queueTable.status, ["waiting", "playing"]))
     .orderBy(asc(queueTable.position), asc(queueTable.createdAt));
+}
+
+// Upsert requester stats when someone adds to queue
+async function upsertRequesterStats(requesterName: string) {
+  await db
+    .insert(requesterStatsTable)
+    .values({ requesterName, requestCount: 1, lastRequestAt: new Date() })
+    .onConflictDoUpdate({
+      target: requesterStatsTable.requesterName,
+      set: {
+        requestCount: sql`${requesterStatsTable.requestCount} + 1`,
+        lastRequestAt: new Date(),
+      },
+    });
 }
 
 // Static/special routes MUST come before parameterised /:id routes
@@ -72,6 +92,9 @@ router.post("/queue", async (req, res): Promise<void> => {
     position: maxPosition,
     status: "waiting",
   }).returning();
+
+  // Track requester stats (fire-and-forget, don't fail request on error)
+  upsertRequesterStats(parsed.data.requesterName).catch(() => undefined);
 
   res.status(201).json({ ...item, song });
 });
@@ -173,21 +196,25 @@ router.patch("/queue/:id/complete", requireAdmin, async (req, res): Promise<void
     .where(eq(queueTable.id, parsed.data.id))
     .returning();
 
-  await db.update(songsTable)
-    .set({ playCount: sql`${songsTable.playCount} + 1` })
-    .where(eq(songsTable.id, queueEntry.songId));
+  const testMode = await isTestMode();
 
-  await db.insert(songHistoryTable).values({
-    songId: queueEntry.songId,
-    songTitle: queueEntry.song?.title ?? "未知歌曲",
-    artist: queueEntry.song?.artist ?? "未知",
-    requester: queueEntry.requesterName,
-    language: queueEntry.song?.language ?? "",
-    tags: (queueEntry.song?.categories ?? []) as string[],
-    vodUrl: null,
-    timestampText: null,
-    performedAt: new Date(),
-  });
+  if (!testMode) {
+    await db.update(songsTable)
+      .set({ playCount: sql`${songsTable.playCount} + 1` })
+      .where(eq(songsTable.id, queueEntry.songId));
+
+    await db.insert(songHistoryTable).values({
+      songId: queueEntry.songId,
+      songTitle: queueEntry.song?.title ?? "未知歌曲",
+      artist: queueEntry.song?.artist ?? "未知",
+      requester: queueEntry.requesterName,
+      language: queueEntry.song?.language ?? "",
+      tags: (queueEntry.song?.categories ?? []) as string[],
+      vodUrl: null,
+      timestampText: null,
+      performedAt: new Date(),
+    });
+  }
 
   const [nextWaiting] = await db.select().from(queueTable)
     .where(eq(queueTable.status, "waiting"))
@@ -197,7 +224,7 @@ router.patch("/queue/:id/complete", requireAdmin, async (req, res): Promise<void
     await db.update(queueTable).set({ status: "playing" }).where(eq(queueTable.id, nextWaiting.id));
   }
 
-  res.json(completedItem);
+  res.json({ ...completedItem, testMode });
 });
 
 export default router;

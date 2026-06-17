@@ -6,11 +6,6 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListSongsParams = {
-search?: string;
-language?: string;
-category?: string;
-primaryTag?: string;
-page?: number;
+export type ListRequestersParams = {
 limit?: number;
 };

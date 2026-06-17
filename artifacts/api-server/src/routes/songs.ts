@@ -141,6 +141,7 @@ router.get("/songs", async (req, res): Promise<void> => {
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
   const { search, language, category, page = 1, limit = 50 } = parsed.data;
+  const primaryTag = (req.query as Record<string, string>)["primaryTag"] as string | undefined;
   const offset = (page - 1) * limit;
 
   const conditions: ReturnType<typeof eq>[] = [];
@@ -152,7 +153,14 @@ router.get("/songs", async (req, res): Promise<void> => {
     ) as any);
   }
   if (language) conditions.push(eq(songsTable.language, language) as any);
-  if (category) conditions.push(sql`${songsTable.categories} @> ${JSON.stringify([category])}::jsonb` as any);
+  if (category) {
+    // Match against both categories array and primaryTag
+    conditions.push(or(
+      sql`${songsTable.categories} @> ${JSON.stringify([category])}::jsonb`,
+      eq(songsTable.primaryTag, category),
+    ) as any);
+  }
+  if (primaryTag) conditions.push(eq(songsTable.primaryTag, primaryTag) as any);
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
   const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(songsTable).where(where);
@@ -171,6 +179,7 @@ router.post("/songs", requireAdmin, async (req, res): Promise<void> => {
     artist: parsed.data.artist,
     language: parsed.data.language ?? "日語",
     status,
+    primaryTag: (parsed.data as any).primaryTag ?? null,
     categories: parsed.data.categories ?? [],
     youtubeUrl: parsed.data.youtubeUrl ?? null,
     isPracticing: parsed.data.isPracticing ?? status.includes("修練"),
@@ -347,6 +356,7 @@ router.patch("/songs/:id", requireAdmin, async (req, res): Promise<void> => {
   if (parsed.data.artist !== undefined) u.artist = parsed.data.artist;
   if (parsed.data.language !== undefined) u.language = parsed.data.language;
   if (req.body.status !== undefined) u.status = req.body.status;
+  if ((parsed.data as any).primaryTag !== undefined) u.primaryTag = (parsed.data as any).primaryTag;
   if (parsed.data.categories !== undefined) u.categories = parsed.data.categories;
   if (parsed.data.youtubeUrl !== undefined) u.youtubeUrl = parsed.data.youtubeUrl;
   if (parsed.data.isPracticing !== undefined) u.isPracticing = parsed.data.isPracticing;

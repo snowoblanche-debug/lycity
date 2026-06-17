@@ -26,6 +26,7 @@ export const ListSongsQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
   "language": zod.coerce.string().optional(),
   "category": zod.coerce.string().optional(),
+  "primaryTag": zod.coerce.string().optional(),
   "page": zod.coerce.number().default(listSongsQueryPageDefault),
   "limit": zod.coerce.number().default(listSongsQueryLimitDefault)
 })
@@ -37,6 +38,7 @@ export const ListSongsResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -58,6 +60,7 @@ export const CreateSongBody = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "status": zod.string().optional(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()).optional(),
   "youtubeUrl": zod.string().nullish(),
   "isPracticing": zod.boolean().optional(),
@@ -78,6 +81,7 @@ export const GetSongResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -99,6 +103,7 @@ export const UpdateSongBody = zod.object({
   "artist": zod.string().optional(),
   "language": zod.string().optional(),
   "status": zod.string().optional(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()).optional(),
   "youtubeUrl": zod.string().nullish(),
   "isPracticing": zod.boolean().optional(),
@@ -111,6 +116,7 @@ export const UpdateSongResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -148,6 +154,7 @@ export const AnalyzeUrlResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -205,6 +212,7 @@ export const ListQueueResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -256,6 +264,7 @@ export const SkipQueueItemResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -287,6 +296,7 @@ export const CompleteQueueItemResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -319,6 +329,7 @@ export const ReorderQueueResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -349,6 +360,7 @@ export const GetCurrentPlayingResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -371,6 +383,7 @@ export const GetCurrentPlayingResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -403,6 +416,7 @@ export const SetQueueItemPlayingResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -518,7 +532,8 @@ export const GetSettingsResponse = zod.object({
   "siteName": zod.string(),
   "siteSubtitle": zod.string().nullish(),
   "bannerText": zod.string().nullish(),
-  "obsKeyEnabled": zod.boolean()
+  "obsKeyEnabled": zod.boolean(),
+  "testMode": zod.boolean()
 })
 
 
@@ -530,7 +545,8 @@ export const UpdateSettingsBody = zod.object({
   "siteName": zod.string().optional(),
   "siteSubtitle": zod.string().nullish(),
   "bannerText": zod.string().nullish(),
-  "obsKey": zod.string().nullish()
+  "obsKey": zod.string().nullish(),
+  "testMode": zod.boolean().optional()
 })
 
 export const UpdateSettingsResponse = zod.object({
@@ -538,7 +554,8 @@ export const UpdateSettingsResponse = zod.object({
   "siteName": zod.string(),
   "siteSubtitle": zod.string().nullish(),
   "bannerText": zod.string().nullish(),
-  "obsKeyEnabled": zod.boolean()
+  "obsKeyEnabled": zod.boolean(),
+  "testMode": zod.boolean()
 })
 
 
@@ -555,6 +572,7 @@ export const GetStatsResponse = zod.object({
   "artist": zod.string(),
   "language": zod.string(),
   "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
   "categories": zod.array(zod.string()),
   "youtubeUrl": zod.string().nullable(),
   "isPracticing": zod.boolean(),
@@ -586,6 +604,35 @@ export const GetStatsResponse = zod.object({
   "count": zod.number()
 }))
 }).optional()
+})
+
+
+/**
+ * @summary List requester stats sorted by request count
+ */
+export const listRequestersQueryLimitDefault = 50;
+
+export const ListRequestersQueryParams = zod.object({
+  "limit": zod.coerce.number().default(listRequestersQueryLimitDefault)
+})
+
+export const ListRequestersResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "requesterName": zod.string(),
+  "requestCount": zod.number(),
+  "lastRequestAt": zod.string()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Rebuild all statistics from song_history (admin only)
+ */
+export const RebuildStatsResponse = zod.object({
+  "songsUpdated": zod.number(),
+  "message": zod.string()
 })
 
 

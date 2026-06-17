@@ -17,6 +17,8 @@ tags:
     description: Category management
   - name: settings
     description: Admin settings
+  - name: admin
+    description: Admin-only operations
 paths:
   /healthz:
     get:
@@ -46,6 +48,10 @@ paths:
           schema:
             type: string
         - name: category
+          in: query
+          schema:
+            type: string
+        - name: primaryTag
           in: query
           schema:
             type: string
@@ -488,6 +494,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/Stats"
 
+  /admin/requesters:
+    get:
+      operationId: listRequesters
+      tags: [admin]
+      summary: List requester stats sorted by request count
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Requester stats list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequesterStatList"
+
+  /admin/stats/rebuild:
+    post:
+      operationId: rebuildStats
+      tags: [admin]
+      summary: Rebuild all statistics from song_history (admin only)
+      responses:
+        "200":
+          description: Rebuild result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RebuildStatsResult"
+
 components:
   schemas:
     HealthStatus:
@@ -511,6 +549,8 @@ components:
           type: string
         playCount:
           type: integer
+        primaryTag:
+          type: ["string", "null"]
         categories:
           type: array
           items:
@@ -538,6 +578,8 @@ components:
           type: string
         status:
           type: string
+        primaryTag:
+          type: ["string", "null"]
         categories:
           type: array
           items:
@@ -560,6 +602,8 @@ components:
           type: string
         status:
           type: string
+        primaryTag:
+          type: ["string", "null"]
         categories:
           type: array
           items:
@@ -691,7 +735,7 @@ components:
 
     Settings:
       type: object
-      required: [bannerImageUrl, siteName, obsKeyEnabled]
+      required: [bannerImageUrl, siteName, obsKeyEnabled, testMode]
       properties:
         bannerImageUrl:
           type: ["string", "null"]
@@ -702,6 +746,8 @@ components:
         bannerText:
           type: ["string", "null"]
         obsKeyEnabled:
+          type: boolean
+        testMode:
           type: boolean
 
     SettingsUpdate:
@@ -717,6 +763,8 @@ components:
           type: ["string", "null"]
         obsKey:
           type: ["string", "null"]
+        testMode:
+          type: boolean
 
     YouTubeUrlInput:
       type: object
@@ -834,6 +882,39 @@ components:
                     type: string
                   count:
                     type: integer
+
+    RequesterStat:
+      type: object
+      required: [id, requesterName, requestCount, lastRequestAt]
+      properties:
+        id:
+          type: integer
+        requesterName:
+          type: string
+        requestCount:
+          type: integer
+        lastRequestAt:
+          type: string
+
+    RequesterStatList:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequesterStat"
+        total:
+          type: integer
+
+    RebuildStatsResult:
+      type: object
+      required: [songsUpdated, message]
+      properties:
+        songsUpdated:
+          type: integer
+        message:
+          type: string
 
     GoogleSheetImport:
       type: object
