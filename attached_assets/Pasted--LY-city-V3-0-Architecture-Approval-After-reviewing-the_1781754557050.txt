@@ -1,0 +1,385 @@
+# LY.city V3.0 Architecture Approval
+
+After reviewing the proposed architecture, I approve the overall direction with the following decisions and priorities.
+
+---
+
+# 1. Multi-Tenant Architecture
+
+Choose:
+
+## Option A — Complete Isolation (Approved)
+
+Each streamer should have their own:
+
+* Song Library
+* Queue
+* Song History
+* Statistics
+* OBS Settings
+* Lyrics
+* Categories
+* Overlay Settings
+
+Future URLs:
+
+https://ly.city/oriyuki
+
+https://ly.city/shiro
+
+https://ly.city/tako
+
+This is the correct long-term architecture.
+
+However:
+
+Please keep Collection Sharing as a future feature so streamers can selectively share song libraries without sharing their entire database.
+
+---
+
+# 2. V3 Phase 1 Scope
+
+Please implement:
+
+## P1 — Lyrics System
+
+## P4 — Song Cooldown
+
+## P5 — Request Notes
+
+together in Phase 1.
+
+Do NOT start OAuth, Collections, or advanced multi-streamer migration yet.
+
+Focus on the actual singing workflow first.
+
+---
+
+# 3. Lyrics System Requirements
+
+This is the highest priority feature.
+
+The goal is:
+
+Song
+↓
+Lyrics
+↓
+OBS
+↓
+Performance History
+
+Complete the full workflow.
+
+---
+
+## Song Fields
+
+Add:
+
+lyrics_text
+
+lyrics_source
+
+lyrics_updated_at
+
+---
+
+## Supported Formats
+
+LRC
+
+KRC
+
+YRC
+
+Plain Text
+
+Store original format.
+
+Do not convert formats automatically.
+
+---
+
+## Lyrics Search
+
+Add:
+
+🔍 Search Lyrics
+
+Workflow:
+
+Song Title + Artist
+↓
+Search Providers
+↓
+Preview Lyrics
+↓
+Import
+
+---
+
+## Lyrics Providers
+
+Approved:
+
+1. LrcLib (Primary)
+
+2. NetEase (Secondary)
+
+Please display:
+
+Lyrics Source
+
+Example:
+
+Source:
+LrcLib
+
+or
+
+Source:
+NetEase
+
+---
+
+## Lyrics Cache
+
+Very important.
+
+Do not search external providers repeatedly.
+
+Workflow:
+
+First Search
+↓
+Save To Database
+↓
+Reuse Cached Lyrics
+
+Future lyric lookups should use DB first.
+
+---
+
+## Lyrics Editor
+
+Admin should be able to:
+
+* Edit Lyrics
+* Replace Lyrics
+* Remove Lyrics
+* Re-sync Lyrics
+
+---
+
+## OBS Lyrics Overlay
+
+Create:
+
+/obs/lyrics
+
+Mode 1:
+
+Simple Mode
+
+Display:
+
+Current Song
+
+Current Line
+
+---
+
+Prepare architecture for:
+
+Mode 2:
+
+KTV Style
+
+Previous Line
+
+Current Line
+
+Next Line
+
+No highlighting required yet.
+
+Only prepare the structure.
+
+---
+
+## Lyrics Testing Tool
+
+Add:
+
+▶ Preview Lyrics
+
+inside the lyrics editor.
+
+Allow testing:
+
+Current line
+
+Next line
+
+Timeline progression
+
+before saving.
+
+---
+
+# 4. Song Cooldown System
+
+Add:
+
+cooldown_days
+
+per song.
+
+Examples:
+
+0
+
+7
+
+14
+
+30
+
+---
+
+When requesting:
+
+If song is inside cooldown period:
+
+Show:
+
+⚠ This song was recently performed.
+
+Display:
+
+Last Performance Date
+
+Remaining Cooldown
+
+---
+
+Admin Option:
+
+Allow Request Anyway
+
+or
+
+Block Request
+
+Cooldown should be configurable.
+
+---
+
+# 5. Request Notes
+
+Add:
+
+request_note
+
+to queue.
+
+Examples:
+
+生日快樂
+
+送給織雪
+
+100天紀念
+
+---
+
+OBS should support displaying:
+
+Song
+
+Requester
+
+Message
+
+---
+
+# 6. Authentication
+
+Do NOT remove ADMIN_PASSWORD.
+
+Keep it permanently as emergency fallback.
+
+Reasons:
+
+* OAuth outage
+* Email login outage
+* Database issues
+* Emergency maintenance
+
+Current login should continue working.
+
+---
+
+# 7. Phase 2 (Do Not Start Yet)
+
+Prepare only.
+
+Do not implement yet.
+
+Future:
+
+* Users
+* Streamers
+* Invitations
+* Email Login
+* Google Login
+* Discord Login
+
+---
+
+# 8. Product Direction
+
+Current focus should NOT be:
+
+* OAuth
+* Collections
+* Public marketplace
+* Social features
+
+Current focus SHOULD be:
+
+Song
+↓
+Lyrics
+↓
+OBS
+↓
+Performance
+
+The complete singing workflow should be perfect before platform expansion.
+
+---
+
+# 9. Before Coding
+
+Please provide:
+
+1. Updated database schema
+2. Migration plan
+3. API endpoints
+4. OBS lyrics architecture
+5. Lyrics synchronization flow
+6. Mockups / screenshots
+
+before implementing V3 Phase 1.
+
+I want to review the architecture before code changes begin.
+
+---
+
+# Important
+
+Do not break existing single-streamer functionality.
+
+All V3 changes must remain backward compatible with the current LY.city database and workflows.
