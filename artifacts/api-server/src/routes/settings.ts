@@ -10,8 +10,9 @@ async function getOrCreateSettings() {
   const rows = await db.select().from(settingsTable).limit(1);
   if (rows.length > 0) return rows[0];
   const [settings] = await db.insert(settingsTable).values({
-    siteName: "聆櫻聖境的點歌旋律",
-    siteSubtitle: "點播喜歡的歌曲，一起留下今晚的旋律",
+    siteName: "LY.city",
+    siteSubtitle: "千羽織雪 Oriyuki｜歌回點歌系統",
+    siteUrl: "https://ly.city",
     bannerImageUrl: null,
     bannerText: null,
     testMode: false,

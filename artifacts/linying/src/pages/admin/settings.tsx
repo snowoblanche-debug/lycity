@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, ExternalLink, Eye, EyeOff, Copy, RefreshCw, FlaskConical, BarChart3, CheckCircle2 } from "lucide-react";
+import { Save, ExternalLink, Eye, EyeOff, Copy, RefreshCw, FlaskConical, BarChart3, CheckCircle2, AlertTriangle, Globe } from "lucide-react";
 
 export default function AdminSettings() {
   const queryClient = useQueryClient();
@@ -29,6 +29,7 @@ export default function AdminSettings() {
   const [showObsKey, setShowObsKey] = useState(false);
   const [testMode, setTestMode] = useState(false);
   const [rebuildResult, setRebuildResult] = useState<{ songsUpdated: number; message: string } | null>(null);
+  const [lastSaveResult, setLastSaveResult] = useState<{ siteUrl: string | null; siteName: string } | null>(null);
 
   useEffect(() => {
     if (settings) {
@@ -42,7 +43,6 @@ export default function AdminSettings() {
     }
   }, [settings]);
 
-  // Load current OBS key from admin endpoint (requires auth)
   useEffect(() => {
     if (obsKeyLoaded) return;
     setObsKeyLoading(true);
@@ -70,8 +70,12 @@ export default function AdminSettings() {
         testMode,
       } as any
     }, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         toast.success("設定已儲存");
+        setLastSaveResult({
+          siteUrl: (data as any).siteUrl ?? null,
+          siteName: (data as any).siteName ?? "",
+        });
         queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
       }
     });
@@ -108,12 +112,15 @@ export default function AdminSettings() {
     setObsKey(key);
   };
 
-  const obsBase = formData.siteUrl?.trim() || window.location.origin;
-  const obsUrl = obsKey ? `${obsBase}/obs?key=${obsKey}` : `${obsBase}/obs`;
+  const effectiveSiteUrl = formData.siteUrl?.trim();
+  const obsBase = effectiveSiteUrl || window.location.origin;
+  const obsUrlBase = `${obsBase}/obs`;
+  const obsUrlWithKey = obsKey ? `${obsBase}/obs?key=${obsKey}` : null;
+  const siteUrlMissing = !!(settings && settings.siteName && !(settings as any).siteUrl);
 
-  const copyObsUrl = () => {
-    navigator.clipboard.writeText(obsUrl);
-    toast.success("已複製 OBS 網址");
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`已複製 ${label}`);
   };
 
   return (
@@ -123,6 +130,31 @@ export default function AdminSettings() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">系統設定</h1>
           <p className="text-muted-foreground text-sm">自訂你的點歌頁面外觀與安全設定。</p>
         </div>
+
+        {/* Site URL missing warning */}
+        {!isLoading && siteUrlMissing && (
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl border"
+            style={{ background: "rgba(245,158,11,0.08)", borderColor: "rgba(245,158,11,0.30)", color: "#92400e" }}>
+            <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-500" />
+            <div>
+              <p className="text-sm font-semibold">⚠ 尚未設定公開網址</p>
+              <p className="text-xs mt-0.5 text-amber-800/80">OBS Overlay 將使用開發網址。請在下方「公開網址」欄位填入正式部署網址後儲存。</p>
+            </div>
+          </div>
+        )}
+
+        {/* Save verification result */}
+        {lastSaveResult && (
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl border"
+            style={{ background: "rgba(34,197,94,0.07)", borderColor: "rgba(34,197,94,0.25)", color: "#166534" }}>
+            <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
+            <div className="text-xs font-mono space-y-0.5">
+              <p className="font-semibold text-sm font-sans">已儲存並驗證 DB 回傳值</p>
+              <p><span className="text-green-800/60">siteName:</span> {lastSaveResult.siteName}</p>
+              <p><span className="text-green-800/60">siteUrl:</span> {lastSaveResult.siteUrl ?? <span className="italic text-amber-700">null（尚未設定）</span>}</p>
+            </div>
+          </div>
+        )}
 
         {/* Test Mode */}
         <Card className="border-border/60 shadow-sm">
@@ -221,14 +253,29 @@ export default function AdminSettings() {
                   <p className="text-xs text-muted-foreground">顯示在首頁橫幅的網站名稱下方</p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="siteUrl" className="text-sm font-medium">公開網址 <span className="text-muted-foreground font-normal text-xs">（選填）</span></Label>
+                  <Label htmlFor="siteUrl" className="text-sm font-medium flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5" />
+                    公開網址
+                    <span className="text-muted-foreground font-normal text-xs">（正式部署網址）</span>
+                  </Label>
                   <Input
                     id="siteUrl"
                     value={formData.siteUrl}
                     onChange={e => setFormData({ ...formData, siteUrl: e.target.value })}
                     placeholder="https://ly.city"
+                    className={!formData.siteUrl.trim() ? "border-amber-300 focus:border-amber-400" : ""}
                   />
-                  <p className="text-xs text-muted-foreground">用於 OBS 網址顯示。若設定 <code className="bg-muted px-1 rounded">https://ly.city</code>，OBS 網址將顯示為 <code className="bg-muted px-1 rounded">https://ly.city/obs</code></p>
+                  {!formData.siteUrl.trim() ? (
+                    <p className="text-xs text-amber-700 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      公開網址尚未設定 — OBS 網址將顯示為開發環境網址
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      OBS 網址將顯示為{" "}
+                      <code className="bg-muted px-1 rounded">{formData.siteUrl.trim()}/obs</code>
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -321,14 +368,42 @@ export default function AdminSettings() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                {/* OBS URL display */}
+                <div className="space-y-3">
                   <Label className="text-sm font-medium">OBS 瀏覽器來源網址</Label>
-                  <div className="flex gap-2">
-                    <Input value={obsUrl} readOnly className="flex-1 text-xs text-muted-foreground bg-muted/50" />
-                    <Button variant="outline" size="icon" onClick={copyObsUrl} className="flex-shrink-0">
-                      <Copy className="w-4 h-4" />
-                    </Button>
+
+                  {!effectiveSiteUrl && (
+                    <div className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg"
+                      style={{ background: "rgba(245,158,11,0.08)", borderColor: "rgba(245,158,11,0.25)", border: "1px solid", color: "#92400e" }}>
+                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" />
+                      公開網址尚未設定 — 目前使用開發環境網址，部署後請更新
+                    </div>
+                  )}
+
+                  {/* Base OBS URL */}
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">基本網址（無金鑰）</p>
+                    <div className="flex gap-2">
+                      <Input value={obsUrlBase} readOnly className="flex-1 text-xs text-muted-foreground bg-muted/50 font-mono" />
+                      <Button variant="outline" size="icon" onClick={() => copyToClipboard(obsUrlBase, "OBS 網址")} className="flex-shrink-0">
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* Key-protected OBS URL */}
+                  {obsUrlWithKey && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">附金鑰網址（建議使用）</p>
+                      <div className="flex gap-2">
+                        <Input value={obsUrlWithKey} readOnly className="flex-1 text-xs text-muted-foreground bg-muted/50 font-mono" />
+                        <Button variant="outline" size="icon" onClick={() => copyToClipboard(obsUrlWithKey, "附金鑰 OBS 網址")} className="flex-shrink-0">
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   <p className="text-xs text-muted-foreground">
                     在 OBS 新增瀏覽器來源，貼上此網址並勾選「允許透明度」
                   </p>
