@@ -94,14 +94,101 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* LIGHT MODE — Morandi Grey-Blue (matches V2) */
 :root {
+  --button-outline: rgba(0,0,0, .10);
+  --badge-outline: rgba(0,0,0, .05);
+  --opaque-button-border-intensity: -8;
+  --elevate-1: rgba(0,0,0, .03);
+  --elevate-2: rgba(0,0,0, .06);
+
+  /* Background: #F5F7FA */
+  --background: 216 33% 97%;
+  /* Text: #243447 */
+  --foreground: 213 33% 21%;
+  /* Border: subtle */
+  --border: 213 20% 88%;
+
+  /* Cards: white glass */
+  --card: 0 0% 100%;
+  --card-foreground: 213 33% 21%;
+  --card-border: 213 20% 88%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 213 33% 21%;
+  --popover-border: 213 20% 88%;
+
+  /* Primary: #7088A3 */
+  --primary: 212 22% 54%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary: #8EA3B9 */
+  --secondary: 211 24% 64%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 212 20% 93%;
+  /* Subtext: #5C6B7A */
+  --muted-foreground: 210 14% 42%;
+
+  --accent: 211 24% 76%;
+  --accent-foreground: 213 33% 21%;
+
+  --destructive: 0 65% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  --input: 212 20% 90%;
+  --ring: 212 22% 54%;
+
+  --chart-1: 212 22% 54%;
+  --chart-2: 211 24% 64%;
+  --chart-3: 212 20% 73%;
+  --chart-4: 216 33% 97%;
+  --chart-5: 210 14% 42%;
+
+  /* Sidebar */
+  --sidebar: 216 28% 94%;
+  --sidebar-foreground: 213 33% 21%;
+  --sidebar-border: 213 20% 86%;
+  --sidebar-primary: 212 22% 54%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 211 24% 88%;
+  --sidebar-accent-foreground: 213 33% 21%;
+  --sidebar-ring: 212 22% 54%;
+
+  --app-font-sans: 'Noto Sans TC', sans-serif;
+  --app-font-serif: Georgia, serif;
+  --app-font-mono: Menlo, monospace;
+  --radius: .625rem;
+
+  /* Real shadows for glassmorphism depth */
+  --shadow-2xs: 0 1px 2px 0 rgba(36,52,71,.06);
+  --shadow-xs: 0 1px 3px 0 rgba(36,52,71,.08), 0 1px 2px -1px rgba(36,52,71,.06);
+  --shadow-sm: 0 2px 6px 0 rgba(36,52,71,.08), 0 1px 2px -1px rgba(36,52,71,.06);
+  --shadow: 0 4px 12px 0 rgba(36,52,71,.10), 0 2px 4px -1px rgba(36,52,71,.06);
+  --shadow-md: 0 6px 16px -2px rgba(36,52,71,.12), 0 3px 6px -2px rgba(36,52,71,.08);
+  --shadow-lg: 0 10px 28px -4px rgba(36,52,71,.14), 0 4px 10px -4px rgba(36,52,71,.08);
+  --shadow-xl: 0 20px 40px -8px rgba(36,52,71,.16), 0 8px 16px -6px rgba(36,52,71,.10);
+  --shadow-2xl: 0 32px 56px -12px rgba(36,52,71,.20);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+
+  --sidebar-primary-border: hsl(var(--sidebar-primary));
+  --sidebar-accent-border: hsl(var(--sidebar-accent));
+  --primary-border: hsl(var(--primary));
+  --secondary-border: hsl(var(--secondary));
+  --muted-border: hsl(var(--muted));
+  --accent-border: hsl(var(--accent));
+  --destructive-border: hsl(var(--destructive));
+}
+
+/* Dark mode for OBS page only — transparent overlay */
+.dark {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
   --opaque-button-border-intensity: 9;
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  /* Morandi grey-blue theme - always dark */
   --background: 220 20% 10%;
   --foreground: 210 20% 90%;
   --border: 215 15% 20%;
@@ -131,47 +218,11 @@
   --destructive-foreground: 0 0% 100%;
   --input: 215 15% 24%;
   --ring: 210 30% 50%;
-  --chart-1: 210 30% 50%;
-  --chart-2: 210 20% 60%;
-  --chart-3: 210 15% 70%;
-  --chart-4: 210 10% 80%;
-  --chart-5: 210 5% 90%;
-
-  --app-font-sans: 'Noto Sans TC', sans-serif;
-  --app-font-serif: Georgia, serif;
-  --app-font-mono: Menlo, monospace;
-  --radius: .5rem; 
-  --shadow-2xs: 0px 2px 0px 0px hsl(220 20% 10% / 0.1); 
-  --shadow-xs: 0px 2px 0px 0px hsl(220 20% 10% / 0.1); 
-  --shadow-sm: 0px 2px 0px 0px hsl(220 20% 10% / 0.1), 0px 1px 2px -1px hsl(220 20% 10% / 0.1);
-  --shadow: 0px 2px 0px 0px hsl(220 20% 10% / 0.1), 0px 1px 2px -1px hsl(220 20% 10% / 0.1);
-  --shadow-md: 0px 2px 0px 0px hsl(220 20% 10% / 0.1), 0px 2px 4px -1px hsl(220 20% 10% / 0.1);
-  --shadow-lg: 0px 2px 0px 0px hsl(220 20% 10% / 0.1), 0px 4px 6px -1px hsl(220 20% 10% / 0.1);
-  --shadow-xl: 0px 2px 0px 0px hsl(220 20% 10% / 0.1), 0px 8px 10px -1px hsl(220 20% 10% / 0.1);
-  --shadow-2xl: 0px 2px 0px 0px hsl(220 20% 10% / 0.1);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-}
-
-.dark {
-  /* Same as :root since dark is the only mode */
 }
 
 @layer base {
   * {
     @apply border-border;
-  }
-  
-  html, body {
-    color-scheme: dark;
   }
 
   body {
@@ -179,8 +230,21 @@
   }
 }
 
+/* Glassmorphism card — light mode */
 .glass-card {
-  @apply bg-card/80 backdrop-blur-md border border-card-border shadow-lg;
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(112,136,163,0.18);
+  box-shadow: var(--shadow);
+}
+
+/* Dark variant for OBS / dark contexts */
+.dark .glass-card {
+  background: rgba(30,38,50,0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 @layer utilities {
