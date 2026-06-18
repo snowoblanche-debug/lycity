@@ -1,0 +1,268 @@
+V3.0 Architecture Approval
+
+After reviewing the architecture proposal, I approve the following decisions.
+
+Multi-Tenant Architecture
+
+Approved:
+
+Option A — Complete Isolation
+
+Each streamer should have their own:
+
+Songs
+Queue
+Song History
+Statistics
+Categories
+Lyrics
+OBS Settings
+
+Future URLs:
+
+https://ly.city/oriyuki
+https://ly.city/shiro
+https://ly.city/tako
+
+This is the preferred long-term architecture.
+
+Collection Sharing can be added later for optional song library sharing.
+
+Phase 1 Scope
+
+Please implement together:
+
+P1 — Lyrics System
+P4 — Song Cooldown
+P5 — Request Notes
+
+Do not start OAuth, Collections, or advanced social features yet.
+
+The focus should be:
+
+Song
+↓
+Lyrics
+↓
+OBS
+↓
+Performance
+Lyrics System
+
+Approved.
+
+Providers:
+
+LrcLib (Primary)
+NetEase (Secondary)
+
+Requirements:
+
+Store original format
+Display lyrics source
+Cache lyrics locally
+Search once, reuse from database
+Allow manual editing
+Allow re-sync
+
+Add:
+
+🔍 Search Lyrics
+▶ Preview Lyrics
+
+inside the Lyrics Editor.
+
+OBS Lyrics Overlay
+
+Create:
+
+/obs/lyrics
+
+Background:
+
+Transparent
+
+Same behavior as current OBS overlay.
+
+Polling Frequency
+
+Approved:
+
+Every 2 seconds
+
+for now.
+
+Future WebSocket support can be considered later.
+
+Song Cooldown
+
+Approved.
+
+Default:
+
+cooldown_mode = warn
+
+Meaning:
+
+Show warning
+
+But still allow request.
+
+Display:
+
+Last Performance Date
+Remaining Cooldown
+
+Admin can later choose:
+
+Warn
+Block
+Request Notes
+
+Approved.
+
+Add:
+
+request_note
+
+to queue.
+
+Examples:
+
+生日快樂
+恭喜紫勾勾
+100天紀念
+
+OBS should be able to display:
+
+Song
+Requester
+Message
+Authentication
+
+Keep:
+
+ADMIN_PASSWORD
+
+permanently.
+
+Reasons:
+
+Emergency maintenance
+OAuth outage
+Email login outage
+Database issues
+
+Current login workflow must continue working.
+
+Important Workflow Decision
+
+Regarding:
+
+started_at
+
+I do NOT want automatic timestamps.
+
+Please use explicit streamer actions.
+
+Current workflow should become:
+
+Waiting
+↓
+🎵 開始演唱
+↓
+Playing
+↓
+✅ 完唱
+↓
+History
+
+Start Singing Button
+
+Add:
+
+🎵 開始演唱
+
+in Queue Management.
+
+When clicked:
+
+status = playing
+started_at = now
+OBS updates
+Lyrics overlay updates
+Complete Song Button
+
+When clicked:
+
+status = completed
+completed_at = now
+write song_history
+increment sing_count
+update statistics
+update cooldown tracking
+Skip Song Button
+
+When clicked:
+
+status = skipped
+no sing_count increment
+no history record
+no statistics update
+Future Compatibility
+
+Please prepare architecture for:
+
+Twitch Channel Points
+YouTube URL Auto Import
+OBS Overlay Expansion
+VOD Timestamps
+Song Ranking
+Seasonal Playlists
+
+Do not implement yet.
+
+Only prepare database and service architecture.
+
+Before Coding
+
+Please provide:
+
+Updated Database Schema
+Migration Plan
+API Endpoints
+Lyrics Synchronization Flow
+OBS Lyrics Architecture
+UI Mockups / Screenshots
+
+before implementation begins.
+
+Important
+
+Do not break existing LY.city functionality.
+
+All V3 changes must remain backward compatible with the current production database and workflows.
+
+另外我會加一個你之後一定會用到的需求：
+
+Song Session
+
+開始歌回
+↓
+建立 Session
+
+2026-06-18 晚間歌回
+
+所有完唱歌曲自動歸屬此 Session
+
+未來你就可以直接產生：
+
+今晚歌單
+
+1. Ring Ring Ring
+2. 妥協
+3. 愛你
+4. 雪Distance
+...
+
+這個比想像中實用很多，之後做 VOD、歌回回顧、Discord 貼文都能直接用。
