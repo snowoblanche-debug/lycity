@@ -689,6 +689,56 @@ export const ListHistoryResponse = zod.object({
 
 
 /**
+ * @summary List all categories
+ */
+export const ListCategoriesResponse = zod.object({
+  "categories": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['language', 'theme', 'season', 'custom']),
+  "createdAt": zod.string()
+}))
+})
+
+
+/**
+ * @summary Create a new category
+ */
+export const CreateCategoryBody = zod.object({
+  "name": zod.string(),
+  "type": zod.enum(['language', 'theme', 'season', 'custom'])
+})
+
+
+/**
+ * @summary Update a category
+ */
+export const UpdateCategoryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateCategoryBody = zod.object({
+  "name": zod.string().optional(),
+  "type": zod.enum(['language', 'theme', 'season', 'custom']).optional()
+})
+
+export const UpdateCategoryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['language', 'theme', 'season', 'custom']),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a category
+ */
+export const DeleteCategoryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary List all song sessions
  */
 export const ListSessionsResponse = zod.object({
