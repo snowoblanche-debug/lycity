@@ -1,0 +1,201 @@
+V1 MVP
+
+功能：
+
+✅ Google Sheet 匯入卡牌
+
+✅ 多卡池
+
+✅ 權重抽卡
+
+✅ 限量卡
+
+✅ OBS顯示
+
+✅ 主題顏色
+
+✅ 玩家紀錄
+
+技術：
+
+React
+Vite
+Tailwind
+Express
+SQLite
+
+目錄結構：
+
+project/
+
+├─ client/
+│  ├─ src/
+│  │  ├─ pages/
+│  │  ├─ components/
+│  │  ├─ hooks/
+│  │  └─ App.jsx
+│
+├─ server/
+│  ├─ db/
+│  ├─ routes/
+│  ├─ services/
+│  └─ index.js
+│
+├─ database.sqlite
+│
+└─ package.json
+SQLite
+
+玩家表
+
+CREATE TABLE players (
+  id INTEGER PRIMARY KEY,
+  twitch_id TEXT UNIQUE,
+  nickname TEXT,
+  shard_count INTEGER DEFAULT 0,
+  chest_count INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+卡牌表
+
+CREATE TABLE cards (
+  id INTEGER PRIMARY KEY,
+  pool_name TEXT,
+  card_name TEXT,
+  content TEXT,
+  weight INTEGER DEFAULT 1,
+
+  is_limited INTEGER DEFAULT 0,
+
+  total_limit INTEGER DEFAULT 0,
+
+  remain_limit INTEGER DEFAULT 0
+);
+
+抽卡紀錄
+
+CREATE TABLE draw_logs (
+  id INTEGER PRIMARY KEY,
+  player_id INTEGER,
+  card_id INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+Google Sheet 格式
+
+Sheet 名稱
+
+Cards
+
+內容：
+
+Pool,CardName,Content,Weight,Limited,Total
+
+命運卡,前進3格,前進3格,30,FALSE,0
+
+命運卡,神秘信封,獲得限定獎勵,5,TRUE,10
+
+Bunny,兔兔時間,聊天室打兔兔,20,FALSE,0
+抽卡 API
+POST /api/draw
+
+Body
+
+{
+  "playerId": 1,
+  "enabledPools": [
+    "命運卡",
+    "Bunny"
+  ]
+}
+
+回傳
+
+{
+  "cardName":"紫勾碎片",
+  "content":"獲得紫勾碎片x1",
+  "pool":"命運卡"
+}
+權重抽卡
+function weightedRandom(cards) {
+  const totalWeight = cards.reduce(
+    (sum, card) => sum + card.weight,
+    0
+  )
+
+  let random =
+    Math.random() * totalWeight
+
+  for (const card of cards) {
+
+    random -= card.weight
+
+    if (random <= 0) {
+      return card
+    }
+  }
+}
+限量卡
+cards = cards.filter(card => {
+
+  if (!card.is_limited)
+    return true
+
+  return card.remain_limit > 0
+})
+
+抽到後
+
+UPDATE cards
+SET remain_limit =
+remain_limit - 1
+WHERE id = ?
+OBS頁面
+
+網址：
+
+https://xxxxx.replit.app/obs
+
+OBS加入：
+
+Browser Source
+
+顯示：
+
+┌─────────┐
+│ 紫勾碎片 │
+│         │
+│ 獲得x1  │
+└─────────┘
+顏色主題
+
+資料格式
+
+{
+  "primary":"#6D4AFF",
+  "secondary":"#F6D46B",
+  "background":"#FFFFFF"
+}
+自由定位
+
+卡牌設定：
+
+{
+  "x":320,
+  "y":240,
+
+  "width":520,
+  "height":720
+}
+
+CSS
+
+.card {
+  position:absolute;
+
+  left:320px;
+  top:240px;
+
+  width:520px;
+  height:720px;
+}

@@ -16,6 +16,7 @@ import AdminCategories from "@/pages/admin/categories";
 import AdminQueue from "@/pages/admin/queue";
 import AdminSettings from "@/pages/admin/settings";
 import AdminRequesterStats from "@/pages/admin/requester-stats";
+import AdminRequesterDetail from "@/pages/admin/requester-detail";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const ProtectedAdminCategories = withAdminGuard(AdminCategories);
 const ProtectedAdminQueue = withAdminGuard(AdminQueue);
 const ProtectedAdminSettings = withAdminGuard(AdminSettings);
 const ProtectedAdminRequesterStats = withAdminGuard(AdminRequesterStats);
+const ProtectedAdminRequesterDetail = withAdminGuard(AdminRequesterDetail);
 
 function Router() {
   return (
@@ -40,6 +42,7 @@ function Router() {
       <Route path="/admin/queue" component={ProtectedAdminQueue} />
       <Route path="/admin/settings" component={ProtectedAdminSettings} />
       <Route path="/admin/requester-stats" component={ProtectedAdminRequesterStats} />
+      <Route path="/admin/requesters/:name" component={ProtectedAdminRequesterDetail} />
 
       <Route component={NotFound} />
     </Switch>

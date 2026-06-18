@@ -19,7 +19,7 @@ export default function AdminOverview() {
   const quickActions = [
     { title: "歌曲管理", desc: "新增、編輯或刪除歌曲", icon: Music, href: "/admin/songs", color: "text-primary" },
     { title: "點歌管理", desc: "查看佇列、標記完成", icon: ListOrdered, href: "/admin/queue", color: "text-green-600" },
-    { title: "點歌排行", desc: "查看觀眾點歌統計", icon: Users, href: "/admin/requester-stats", color: "text-purple-600" },
+    { title: "點歌者排行", desc: "查看觀眾點歌統計", icon: Users, href: "/admin/requester-stats", color: "text-purple-600" },
     { title: "演唱紀錄", desc: "瀏覽歷史演唱記錄", icon: History, href: "/history", color: "text-orange-500" },
     { title: "系統設定", desc: "橫幅、OBS 金鑰、測試模式", icon: Settings, href: "/admin/settings", color: "text-[#6B7280]" },
   ];

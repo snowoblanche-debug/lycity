@@ -1,8 +1,9 @@
+import { useLocation } from "wouter";
 import { useListRequesters } from "@workspace/api-client-react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Crown, Trophy } from "lucide-react";
+import { Users, Crown, Trophy, ChevronRight } from "lucide-react";
 
 function RankIcon({ rank }: { rank: number }) {
   if (rank === 1) return <Crown className="w-4 h-4 text-amber-500" />;
@@ -12,6 +13,7 @@ function RankIcon({ rank }: { rank: number }) {
 }
 
 export default function RequesterStatsPage() {
+  const [, setLocation] = useLocation();
   const { data, isLoading } = useListRequesters({ limit: 100 });
 
   return (
@@ -78,8 +80,9 @@ export default function RequesterStatsPage() {
                   const max = data.items[0]?.requestCount ?? 1;
                   const pct = Math.round((item.requestCount / max) * 100);
                   return (
-                    <div key={item.id}
-                      className="flex items-center gap-4 px-3 py-2.5 rounded-lg transition-colors hover:bg-muted/30"
+                    <button key={item.id}
+                      onClick={() => setLocation(`/admin/requesters/${encodeURIComponent(item.requesterName)}`)}
+                      className="w-full flex items-center gap-4 px-3 py-2.5 rounded-lg transition-colors hover:bg-primary/5 cursor-pointer text-left group"
                       style={i < 3 ? { background: i === 0 ? "rgba(245,158,11,0.06)" : "rgba(255,255,255,0.60)" } : undefined}
                     >
                       <div className="w-5 flex items-center justify-center flex-shrink-0">
@@ -87,7 +90,7 @@ export default function RequesterStatsPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-semibold text-[#243447] truncate">{item.requesterName}</span>
+                          <span className="text-sm font-semibold text-[#243447] truncate group-hover:text-primary transition-colors">{item.requesterName}</span>
                           <span className="text-sm font-bold text-primary ml-3 flex-shrink-0">{item.requestCount} 次</span>
                         </div>
                         <div className="h-1 rounded-full bg-muted/50">
@@ -97,7 +100,8 @@ export default function RequesterStatsPage() {
                       <div className="text-[10px] text-[#6B7280] flex-shrink-0 w-20 text-right">
                         {new Date(item.lastRequestAt).toLocaleDateString("zh-TW")}
                       </div>
-                    </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-[#6B7280] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    </button>
                   );
                 })}
               </div>

@@ -1,0 +1,220 @@
+# V2.3 Verification & Fixes Required
+
+Thank you for the V2.3 implementation.
+
+Before we consider V2.3 complete, I need verification and screenshots for the following items because the current UI does not appear to match the implementation summary.
+
+---
+
+## 1. LY.city Branding Verification
+
+You stated:
+
+site_name = LY.city
+
+However my screenshots still show:
+
+聆櫻聖境的點歌旋律
+
+in multiple places.
+
+Please verify:
+
+* Navbar
+* Browser title
+* Login page
+* Homepage banner
+* Admin sidebar
+* Open Graph metadata
+
+Show screenshots.
+
+Also provide:
+
+Current settings table values:
+
+site_name
+site_subtitle
+site_url
+
+I want to verify the branding migration actually completed.
+
+---
+
+## 2. Category Management Contrast Is Still Failing
+
+Current screenshot still shows:
+
+名稱
+類型
+操作
+
+and category rows:
+
+神曲
+中文
+日語
+
+blending into the background.
+
+This does NOT match:
+
+Header:
+#243447
+font-weight:700
+
+Content:
+#374151
+
+Please inspect actual rendered CSS.
+
+I want:
+
+table headers clearly readable
+table rows clearly readable
+badge text clearly readable
+
+No opacity below 80%.
+
+Please provide before/after screenshots.
+
+---
+
+## 3. OBS URL Still Shows Internal Hostname
+
+Current screenshot:
+
+https://87356162-b589-4487-xxxx.replit.dev/obs
+
+This is not acceptable.
+
+The OBS URL should use:
+
+settings.site_url
+
+Example:
+
+https://ly.city/obs
+
+or
+
+https://ly.city/obs?key=xxxxx
+
+Please verify:
+
+* Is site_url saved?
+* Is OBS URL actually reading site_url?
+* Is fallback logic overriding it?
+
+Show the exact code path being used.
+
+---
+
+## 4. Primary Tag System Needs Verification
+
+You reported:
+
+Primary Tag
+Secondary Tags
+
+implemented.
+
+However I do not see evidence in screenshots.
+
+Please provide:
+
+Song edit dialog screenshot showing:
+
+Primary Tag (single select)
+
+Secondary Tags (multi select)
+
+Example:
+
+Primary:
+抒情
+
+Secondary:
+EMO
+神曲
+
+Also show database schema changes.
+
+Expected:
+
+songs.primary_tag_id
+
+and relationship logic.
+
+---
+
+## 5. Dashboard Quick Actions
+
+I currently see:
+
+歌曲管理
+點歌管理
+點歌排行
+演唱紀錄
+系統設定
+
+Good.
+
+However:
+
+點歌者排行
+
+should also appear here.
+
+Please add:
+
+點歌者排行
+查看觀眾點歌統計
+
+and link directly to:
+
+/admin/requester-stats
+
+---
+
+## 6. Requester Statistics Needs Drill-Down Preparation
+
+Current leaderboard page only shows totals.
+
+Please prepare future architecture:
+
+Click requester:
+
+123
+
+↓
+
+/admin/requesters/123
+
+Future page should support:
+
+* Total requests
+* Unique songs requested
+* Most requested songs
+* Recent requests
+* Full request history
+
+No need to build the page fully yet.
+
+Please prepare route structure and schema.
+
+---
+
+## 7. Most Important Question
+
+Please provide screenshots proving:
+
+A. Category readability fixed
+
+B. Primary tag editor exists
+
+C. OBS URL uses site_url
+
+D. LY.city branding appears everywhere
+
+Without screenshots I cannot verify these features are actually complete.
