@@ -20,4 +20,10 @@ export interface SongHistory {
   /** @nullable */
   timestampText?: string | null;
   performedAt: string;
+  /** @nullable */
+  sessionId?: number | null;
+  /** @nullable */
+  requestNote?: string | null;
+  /** @nullable */
+  lyricsSource?: string | null;
 }

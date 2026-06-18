@@ -1,0 +1,1 @@
+- [V3 static serving via API](v3-static-serving.md) — V3 is served as static files by the API server at /v3/, not as a live vite dev server.

@@ -19,6 +19,12 @@ tags:
     description: Admin settings
   - name: admin
     description: Admin-only operations
+  - name: sessions
+    description: Song session (歌回) management
+  - name: lyrics
+    description: Lyrics management
+  - name: obs
+    description: OBS overlay endpoints
 paths:
   /healthz:
     get:
@@ -202,6 +208,105 @@ paths:
               schema:
                 $ref: "#/components/schemas/ImportResult"
 
+  /songs/{id}/lyrics:
+    get:
+      operationId: getSongLyrics
+      tags: [lyrics]
+      summary: Get lyrics for a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Song lyrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongLyrics"
+    patch:
+      operationId: updateSongLyrics
+      tags: [lyrics]
+      summary: Save or update lyrics for a song (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SongLyricsInput"
+      responses:
+        "200":
+          description: Lyrics updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongLyrics"
+    delete:
+      operationId: deleteSongLyrics
+      tags: [lyrics]
+      summary: Remove lyrics from a song (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Lyrics removed
+
+  /songs/{id}/lyrics/search:
+    post:
+      operationId: searchSongLyrics
+      tags: [lyrics]
+      summary: Search external lyrics providers for a song (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LyricsSearchInput"
+      responses:
+        "200":
+          description: Lyrics search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LyricsSearchResult"
+
+  /songs/{id}/cooldown:
+    get:
+      operationId: getSongCooldown
+      tags: [songs]
+      summary: Get cooldown status for a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cooldown status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CooldownStatus"
+
   /queue:
     get:
       operationId: listQueue
@@ -270,7 +375,7 @@ paths:
     patch:
       operationId: completeQueueItem
       tags: [queue]
-      summary: Mark a queue item as completed (move to played)
+      summary: Mark a queue item as completed (writes history)
       parameters:
         - name: id
           in: path
@@ -321,7 +426,7 @@ paths:
     patch:
       operationId: setQueueItemPlaying
       tags: [queue]
-      summary: Mark a queue item as now playing
+      summary: Mark a queue item as now playing (V2 compat)
       parameters:
         - name: id
           in: path
@@ -331,6 +436,25 @@ paths:
       responses:
         "200":
           description: Queue item set to playing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueItem"
+
+  /queue/{id}/start:
+    patch:
+      operationId: startQueueItem
+      tags: [queue]
+      summary: "V3: Explicitly start singing — sets started_at timestamp for lyrics sync"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Queue item started
           content:
             application/json:
               schema:
@@ -352,6 +476,10 @@ paths:
           schema:
             type: integer
             default: 50
+        - name: sessionId
+          in: query
+          schema:
+            type: integer
       responses:
         "200":
           description: History list
@@ -360,64 +488,71 @@ paths:
               schema:
                 $ref: "#/components/schemas/SongHistoryList"
 
-  /categories:
+  /sessions:
     get:
-      operationId: listCategories
-      tags: [categories]
-      summary: List all categories
+      operationId: listSessions
+      tags: [sessions]
+      summary: List all song sessions
       responses:
         "200":
-          description: Categories list
+          description: Sessions list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CategoryList"
+                $ref: "#/components/schemas/SessionList"
     post:
-      operationId: createCategory
-      tags: [categories]
-      summary: Create a category
+      operationId: createSession
+      tags: [sessions]
+      summary: Create and start a new song session (admin)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CategoryInput"
+              $ref: "#/components/schemas/SessionInput"
       responses:
         "201":
-          description: Category created
+          description: Session created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Category"
+                $ref: "#/components/schemas/Session"
 
-  /categories/{id}:
-    patch:
-      operationId: updateCategory
-      tags: [categories]
-      summary: Update a category
+  /sessions/active:
+    get:
+      operationId: getActiveSession
+      tags: [sessions]
+      summary: Get the currently active session
+      responses:
+        "200":
+          description: Active session or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActiveSessionResponse"
+
+  /sessions/{id}:
+    get:
+      operationId: getSession
+      tags: [sessions]
+      summary: Get a session with its setlist
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CategoryUpdate"
       responses:
         "200":
-          description: Category updated
+          description: Session with setlist
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Category"
+                $ref: "#/components/schemas/SessionDetail"
     delete:
-      operationId: deleteCategory
-      tags: [categories]
-      summary: Delete a category
+      operationId: deleteSession
+      tags: [sessions]
+      summary: Delete a session (admin)
       parameters:
         - name: id
           in: path
@@ -426,7 +561,45 @@ paths:
             type: integer
       responses:
         "204":
-          description: Category deleted
+          description: Session deleted
+
+  /sessions/{id}/end:
+    patch:
+      operationId: endSession
+      tags: [sessions]
+      summary: End a song session (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Session ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /sessions/{id}/export:
+    get:
+      operationId: exportSession
+      tags: [sessions]
+      summary: Export session setlist as plain text (for Discord posting)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Plain text setlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionExport"
 
   /obs/verify:
     get:
@@ -450,6 +623,19 @@ paths:
                 properties:
                   valid:
                     type: boolean
+
+  /obs/lyrics/current:
+    get:
+      operationId: getObsLyricsCurrent
+      tags: [obs]
+      summary: Get current song + lyrics for OBS lyrics overlay (polls every 2s)
+      responses:
+        "200":
+          description: Current lyrics state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObsLyricsState"
 
   /settings:
     get:
@@ -537,7 +723,7 @@ components:
 
     Song:
       type: object
-      required: [id, title, artist, language, playCount, categories, youtubeUrl, isPracticing, hasPitchWarning, createdAt]
+      required: [id, title, artist, language, playCount, categories, youtubeUrl, isPracticing, hasPitchWarning, createdAt, cooldownDays, cooldownMode]
       properties:
         id:
           type: integer
@@ -565,6 +751,19 @@ components:
           type: string
         createdAt:
           type: string
+        lyricsText:
+          type: ["string", "null"]
+        lyricsFormat:
+          type: ["string", "null"]
+        lyricsSource:
+          type: ["string", "null"]
+        lyricsUpdatedAt:
+          type: ["string", "null"]
+        cooldownDays:
+          type: integer
+        cooldownMode:
+          type: string
+          enum: [warn, block]
 
     SongInput:
       type: object
@@ -590,6 +789,10 @@ components:
           type: boolean
         hasPitchWarning:
           type: boolean
+        cooldownDays:
+          type: integer
+        cooldownMode:
+          type: string
 
     SongUpdate:
       type: object
@@ -614,6 +817,10 @@ components:
           type: boolean
         hasPitchWarning:
           type: boolean
+        cooldownDays:
+          type: integer
+        cooldownMode:
+          type: string
 
     SongList:
       type: object
@@ -629,6 +836,88 @@ components:
           type: integer
         limit:
           type: integer
+
+    SongLyrics:
+      type: object
+      required: [songId]
+      properties:
+        songId:
+          type: integer
+        lyricsText:
+          type: ["string", "null"]
+        lyricsFormat:
+          type: ["string", "null"]
+        lyricsSource:
+          type: ["string", "null"]
+        lyricsUpdatedAt:
+          type: ["string", "null"]
+
+    SongLyricsInput:
+      type: object
+      required: [lyricsText, lyricsFormat, lyricsSource]
+      properties:
+        lyricsText:
+          type: string
+        lyricsFormat:
+          type: string
+          enum: [lrc, krc, yrc, plain]
+        lyricsSource:
+          type: string
+          enum: [lrclib, netease, manual]
+
+    LyricsSearchInput:
+      type: object
+      required: [provider]
+      properties:
+        provider:
+          type: string
+          enum: [lrclib, netease, auto]
+        title:
+          type: ["string", "null"]
+        artist:
+          type: ["string", "null"]
+
+    LyricsSearchResultItem:
+      type: object
+      required: [provider, lyricsText, lyricsFormat, previewLines]
+      properties:
+        provider:
+          type: string
+        lyricsText:
+          type: string
+        lyricsFormat:
+          type: string
+        duration:
+          type: ["integer", "null"]
+        previewLines:
+          type: array
+          items:
+            type: string
+
+    LyricsSearchResult:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/LyricsSearchResultItem"
+
+    CooldownStatus:
+      type: object
+      required: [cooldownDays, cooldownMode, isInCooldown]
+      properties:
+        cooldownDays:
+          type: integer
+        cooldownMode:
+          type: string
+          enum: [warn, block]
+        lastPerformed:
+          type: ["string", "null"]
+        remainingDays:
+          type: integer
+        isInCooldown:
+          type: boolean
 
     QueueItem:
       type: object
@@ -651,6 +940,12 @@ components:
           enum: [waiting, playing, completed, skipped]
         createdAt:
           type: string
+        startedAt:
+          type: ["string", "null"]
+        completedAt:
+          type: ["string", "null"]
+        sessionId:
+          type: ["integer", "null"]
 
     QueueItemInput:
       type: object
@@ -662,6 +957,7 @@ components:
           type: string
         note:
           type: ["string", "null"]
+          maxLength: 100
 
     QueueList:
       type: object
@@ -690,6 +986,100 @@ components:
           $ref: "#/components/schemas/QueueItem"
         next:
           $ref: "#/components/schemas/QueueItem"
+
+    ObsLyricsState:
+      type: object
+      required: [hasCurrentSong]
+      properties:
+        hasCurrentSong:
+          type: boolean
+        song:
+          type: object
+          properties:
+            title:
+              type: string
+            artist:
+              type: string
+        startedAt:
+          type: ["string", "null"]
+        lyricsText:
+          type: ["string", "null"]
+        lyricsFormat:
+          type: ["string", "null"]
+        requester:
+          type: ["string", "null"]
+        requestNote:
+          type: ["string", "null"]
+
+    Session:
+      type: object
+      required: [id, title, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        startedAt:
+          type: ["string", "null"]
+        endedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    SessionInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+
+    SessionList:
+      type: object
+      required: [sessions]
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Session"
+
+    ActiveSessionResponse:
+      type: object
+      required: [session]
+      properties:
+        session:
+          oneOf:
+            - $ref: "#/components/schemas/Session"
+            - type: "null"
+
+    SessionDetail:
+      type: object
+      required: [session, setlist, songCount]
+      properties:
+        session:
+          $ref: "#/components/schemas/Session"
+        setlist:
+          type: array
+          items:
+            $ref: "#/components/schemas/SongHistory"
+        songCount:
+          type: integer
+
+    SessionExport:
+      type: object
+      required: [title, text, songCount]
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+        songCount:
+          type: integer
 
     Category:
       type: object
@@ -824,6 +1214,12 @@ components:
           type: ["string", "null"]
         performedAt:
           type: string
+        sessionId:
+          type: ["integer", "null"]
+        requestNote:
+          type: ["string", "null"]
+        lyricsSource:
+          type: ["string", "null"]
 
     SongHistoryList:
       type: object

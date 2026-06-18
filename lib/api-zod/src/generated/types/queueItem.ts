@@ -18,4 +18,10 @@ export interface QueueItem {
   position: number;
   status: QueueItemStatus;
   createdAt: string;
+  /** @nullable */
+  startedAt?: string | null;
+  /** @nullable */
+  completedAt?: string | null;
+  /** @nullable */
+  sessionId?: number | null;
 }

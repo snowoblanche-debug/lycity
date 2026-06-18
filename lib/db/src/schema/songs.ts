@@ -15,6 +15,16 @@ export const songsTable = pgTable("songs", {
   isPracticing: boolean("is_practicing").notNull().default(false),
   hasPitchWarning: boolean("has_pitch_warning").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+
+  // V3 Lyrics
+  lyricsText: text("lyrics_text"),
+  lyricsFormat: text("lyrics_format"), // 'lrc' | 'krc' | 'yrc' | 'plain'
+  lyricsSource: text("lyrics_source"), // 'lrclib' | 'netease' | 'manual'
+  lyricsUpdatedAt: timestamp("lyrics_updated_at"),
+
+  // V3 Cooldown
+  cooldownDays: integer("cooldown_days").notNull().default(0),
+  cooldownMode: text("cooldown_mode").notNull().default("warn"), // 'warn' | 'block'
 });
 
 export const insertSongSchema = createInsertSchema(songsTable).omit({ id: true, createdAt: true });

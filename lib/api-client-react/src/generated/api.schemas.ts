@@ -9,6 +9,14 @@ export interface HealthStatus {
   status: string;
 }
 
+export type SongCooldownMode = typeof SongCooldownMode[keyof typeof SongCooldownMode];
+
+
+export const SongCooldownMode = {
+  warn: 'warn',
+  block: 'block',
+} as const;
+
 export interface Song {
   id: number;
   title: string;
@@ -24,6 +32,16 @@ export interface Song {
   hasPitchWarning: boolean;
   status?: string;
   createdAt: string;
+  /** @nullable */
+  lyricsText?: string | null;
+  /** @nullable */
+  lyricsFormat?: string | null;
+  /** @nullable */
+  lyricsSource?: string | null;
+  /** @nullable */
+  lyricsUpdatedAt?: string | null;
+  cooldownDays: number;
+  cooldownMode: SongCooldownMode;
 }
 
 export interface SongInput {
@@ -38,6 +56,8 @@ export interface SongInput {
   youtubeUrl?: string | null;
   isPracticing?: boolean;
   hasPitchWarning?: boolean;
+  cooldownDays?: number;
+  cooldownMode?: string;
 }
 
 export interface SongUpdate {
@@ -52,6 +72,8 @@ export interface SongUpdate {
   youtubeUrl?: string | null;
   isPracticing?: boolean;
   hasPitchWarning?: boolean;
+  cooldownDays?: number;
+  cooldownMode?: string;
 }
 
 export interface SongList {
@@ -59,6 +81,90 @@ export interface SongList {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface SongLyrics {
+  songId: number;
+  /** @nullable */
+  lyricsText?: string | null;
+  /** @nullable */
+  lyricsFormat?: string | null;
+  /** @nullable */
+  lyricsSource?: string | null;
+  /** @nullable */
+  lyricsUpdatedAt?: string | null;
+}
+
+export type SongLyricsInputLyricsFormat = typeof SongLyricsInputLyricsFormat[keyof typeof SongLyricsInputLyricsFormat];
+
+
+export const SongLyricsInputLyricsFormat = {
+  lrc: 'lrc',
+  krc: 'krc',
+  yrc: 'yrc',
+  plain: 'plain',
+} as const;
+
+export type SongLyricsInputLyricsSource = typeof SongLyricsInputLyricsSource[keyof typeof SongLyricsInputLyricsSource];
+
+
+export const SongLyricsInputLyricsSource = {
+  lrclib: 'lrclib',
+  netease: 'netease',
+  manual: 'manual',
+} as const;
+
+export interface SongLyricsInput {
+  lyricsText: string;
+  lyricsFormat: SongLyricsInputLyricsFormat;
+  lyricsSource: SongLyricsInputLyricsSource;
+}
+
+export type LyricsSearchInputProvider = typeof LyricsSearchInputProvider[keyof typeof LyricsSearchInputProvider];
+
+
+export const LyricsSearchInputProvider = {
+  lrclib: 'lrclib',
+  netease: 'netease',
+  auto: 'auto',
+} as const;
+
+export interface LyricsSearchInput {
+  provider: LyricsSearchInputProvider;
+  /** @nullable */
+  title?: string | null;
+  /** @nullable */
+  artist?: string | null;
+}
+
+export interface LyricsSearchResultItem {
+  provider: string;
+  lyricsText: string;
+  lyricsFormat: string;
+  /** @nullable */
+  duration?: number | null;
+  previewLines: string[];
+}
+
+export interface LyricsSearchResult {
+  results: LyricsSearchResultItem[];
+}
+
+export type CooldownStatusCooldownMode = typeof CooldownStatusCooldownMode[keyof typeof CooldownStatusCooldownMode];
+
+
+export const CooldownStatusCooldownMode = {
+  warn: 'warn',
+  block: 'block',
+} as const;
+
+export interface CooldownStatus {
+  cooldownDays: number;
+  cooldownMode: CooldownStatusCooldownMode;
+  /** @nullable */
+  lastPerformed?: string | null;
+  remainingDays?: number;
+  isInCooldown: boolean;
 }
 
 export type QueueItemStatus = typeof QueueItemStatus[keyof typeof QueueItemStatus];
@@ -81,12 +187,21 @@ export interface QueueItem {
   position: number;
   status: QueueItemStatus;
   createdAt: string;
+  /** @nullable */
+  startedAt?: string | null;
+  /** @nullable */
+  completedAt?: string | null;
+  /** @nullable */
+  sessionId?: number | null;
 }
 
 export interface QueueItemInput {
   songId: number;
   requesterName: string;
-  /** @nullable */
+  /**
+     * @maxLength 100
+     * @nullable
+     */
   note?: string | null;
 }
 
@@ -102,6 +217,87 @@ export interface QueueReorder {
 export interface CurrentPlaying {
   current?: QueueItem;
   next?: QueueItem;
+}
+
+export type ObsLyricsStateSong = {
+  title?: string;
+  artist?: string;
+};
+
+export interface ObsLyricsState {
+  hasCurrentSong: boolean;
+  song?: ObsLyricsStateSong;
+  /** @nullable */
+  startedAt?: string | null;
+  /** @nullable */
+  lyricsText?: string | null;
+  /** @nullable */
+  lyricsFormat?: string | null;
+  /** @nullable */
+  requester?: string | null;
+  /** @nullable */
+  requestNote?: string | null;
+}
+
+export interface Session {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  isActive: boolean;
+  /** @nullable */
+  startedAt?: string | null;
+  /** @nullable */
+  endedAt?: string | null;
+  createdAt: string;
+}
+
+export interface SessionInput {
+  title: string;
+  /** @nullable */
+  description?: string | null;
+}
+
+export interface SessionList {
+  sessions: Session[];
+}
+
+export interface ActiveSessionResponse {
+  session: Session | null;
+}
+
+export interface SongHistory {
+  id: number;
+  /** @nullable */
+  songId?: number | null;
+  songTitle: string;
+  artist: string;
+  requester: string;
+  language: string;
+  tags: string[];
+  /** @nullable */
+  vodUrl?: string | null;
+  /** @nullable */
+  timestampText?: string | null;
+  performedAt: string;
+  /** @nullable */
+  sessionId?: number | null;
+  /** @nullable */
+  requestNote?: string | null;
+  /** @nullable */
+  lyricsSource?: string | null;
+}
+
+export interface SessionDetail {
+  session: Session;
+  setlist: SongHistory[];
+  songCount: number;
+}
+
+export interface SessionExport {
+  title: string;
+  text: string;
+  songCount: number;
 }
 
 export type CategoryType = typeof CategoryType[keyof typeof CategoryType];
@@ -198,22 +394,6 @@ export interface YouTubeAnalysis {
   similarSongs: Song[];
 }
 
-export interface SongHistory {
-  id: number;
-  /** @nullable */
-  songId?: number | null;
-  songTitle: string;
-  artist: string;
-  requester: string;
-  language: string;
-  tags: string[];
-  /** @nullable */
-  vodUrl?: string | null;
-  /** @nullable */
-  timestampText?: string | null;
-  performedAt: string;
-}
-
 export interface SongHistoryList {
   items: SongHistory[];
   total: number;
@@ -298,6 +478,7 @@ limit?: number;
 export type ListHistoryParams = {
 page?: number;
 limit?: number;
+sessionId?: number;
 };
 
 export type VerifyObsKeyParams = {

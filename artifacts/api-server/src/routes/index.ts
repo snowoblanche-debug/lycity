@@ -7,11 +7,15 @@ import settingsRouter from "./settings";
 import statsRouter from "./stats";
 import historyRouter from "./history";
 import adminRouter from "./admin";
+import sessionsRouter from "./sessions";
+import lyricsRouter from "./lyrics";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(adminRouter);
+router.use(sessionsRouter);
+router.use(lyricsRouter);
 router.use(songsRouter);
 router.use(queueRouter);
 router.use(categoriesRouter);

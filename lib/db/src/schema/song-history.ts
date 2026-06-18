@@ -2,6 +2,7 @@ import { pgTable, serial, text, integer, timestamp, jsonb } from "drizzle-orm/pg
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { songsTable } from "./songs";
+import { songSessionsTable } from "./song-sessions";
 
 export const songHistoryTable = pgTable("song_history", {
   id: serial("id").primaryKey(),
@@ -14,6 +15,11 @@ export const songHistoryTable = pgTable("song_history", {
   vodUrl: text("vod_url"),
   timestampText: text("timestamp_text"),
   performedAt: timestamp("performed_at").notNull().defaultNow(),
+
+  // V3 enriched history
+  sessionId: integer("session_id").references(() => songSessionsTable.id, { onDelete: "set null" }),
+  requestNote: text("request_note"),
+  lyricsSource: text("lyrics_source"),
 });
 
 export const insertSongHistorySchema = createInsertSchema(songHistoryTable).omit({ id: true });

@@ -18,4 +18,6 @@ export interface SongInput {
   youtubeUrl?: string | null;
   isPracticing?: boolean;
   hasPitchWarning?: boolean;
+  cooldownDays?: number;
+  cooldownMode?: string;
 }

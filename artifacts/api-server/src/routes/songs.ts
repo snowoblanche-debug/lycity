@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, ilike, or, sql, desc, and } from "drizzle-orm";
-import { db, songsTable } from "@workspace/db";
+import { db, songsTable, songHistoryTable } from "@workspace/db";
 import {
   ListSongsQueryParams,
   CreateSongBody,
@@ -374,6 +374,61 @@ router.delete("/songs/:id", requireAdmin, async (req, res): Promise<void> => {
   const [song] = await db.delete(songsTable).where(eq(songsTable.id, parsed.data.id)).returning();
   if (!song) { res.status(404).json({ error: "Song not found" }); return; }
   res.sendStatus(204);
+});
+
+// V3: cooldown status — MUST come after /songs/:id routes but path is distinct
+router.get("/songs/:id/cooldown", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [song] = await db
+    .select({ cooldownDays: songsTable.cooldownDays, cooldownMode: songsTable.cooldownMode })
+    .from(songsTable)
+    .where(eq(songsTable.id, id));
+  if (!song) { res.status(404).json({ error: "Song not found" }); return; }
+
+  const [lastHistory] = await db
+    .select({ performedAt: songHistoryTable.performedAt })
+    .from(songHistoryTable)
+    .where(eq(songHistoryTable.songId, id))
+    .orderBy(desc(songHistoryTable.performedAt))
+    .limit(1);
+
+  const lastPerformed = lastHistory?.performedAt ?? null;
+  const cooldownDays = song.cooldownDays ?? 0;
+  let remainingDays = 0;
+  let isInCooldown = false;
+
+  if (lastPerformed && cooldownDays > 0) {
+    const daysSince = (Date.now() - lastPerformed.getTime()) / (1000 * 60 * 60 * 24);
+    remainingDays = Math.max(0, Math.ceil(cooldownDays - daysSince));
+    isInCooldown = remainingDays > 0;
+  }
+
+  res.json({
+    cooldownDays,
+    cooldownMode: song.cooldownMode ?? "warn",
+    lastPerformed: lastPerformed?.toISOString() ?? null,
+    remainingDays,
+    isInCooldown,
+  });
+});
+
+// V3: update cooldown settings for a song
+router.patch("/songs/:id/cooldown", requireAdmin, async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const { cooldownDays, cooldownMode } = req.body as { cooldownDays?: number; cooldownMode?: string };
+  const updates: Record<string, unknown> = {};
+  if (cooldownDays !== undefined) updates.cooldownDays = Math.max(0, cooldownDays);
+  if (cooldownMode === "warn" || cooldownMode === "block") updates.cooldownMode = cooldownMode;
+
+  if (Object.keys(updates).length === 0) { res.status(400).json({ error: "No valid fields to update" }); return; }
+
+  const [song] = await db.update(songsTable).set(updates).where(eq(songsTable.id, id)).returning();
+  if (!song) { res.status(404).json({ error: "Song not found" }); return; }
+  res.json(song);
 });
 
 export default router;

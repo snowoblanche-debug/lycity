@@ -9,6 +9,9 @@
 export interface QueueItemInput {
   songId: number;
   requesterName: string;
-  /** @nullable */
+  /**
+     * @maxLength 100
+     * @nullable
+     */
   note?: string | null;
 }

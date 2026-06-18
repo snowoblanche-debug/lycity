@@ -20,10 +20,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  Category,
-  CategoryInput,
-  CategoryList,
-  CategoryUpdate,
+  ActiveSessionResponse,
+  CooldownStatus,
   CurrentPlaying,
   GoogleSheetImport,
   HealthStatus,
@@ -31,18 +29,28 @@ import type {
   ListHistoryParams,
   ListRequestersParams,
   ListSongsParams,
+  LyricsSearchInput,
+  LyricsSearchResult,
+  ObsLyricsState,
   QueueItem,
   QueueItemInput,
   QueueList,
   QueueReorder,
   RebuildStatsResult,
   RequesterStatList,
+  Session,
+  SessionDetail,
+  SessionExport,
+  SessionInput,
+  SessionList,
   Settings,
   SettingsUpdate,
   Song,
   SongHistoryList,
   SongInput,
   SongList,
+  SongLyrics,
+  SongLyricsInput,
   SongUpdate,
   Stats,
   SyncPreview,
@@ -728,6 +736,374 @@ export const useImportFromGoogleSheet = <TError = ErrorType<unknown>,
       return useMutation(getImportFromGoogleSheetMutationOptions(options));
     }
 
+export const getGetSongLyricsUrl = (id: number,) => {
+
+
+
+
+  return `/api/songs/${id}/lyrics`
+}
+
+/**
+ * @summary Get lyrics for a song
+ */
+export const getSongLyrics = async (id: number, options?: RequestInit): Promise<SongLyrics> => {
+
+  return customFetch<SongLyrics>(getGetSongLyricsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSongLyricsQueryKey = (id: number,) => {
+    return [
+    `/api/songs/${id}/lyrics`
+    ] as const;
+    }
+
+
+export const getGetSongLyricsQueryOptions = <TData = Awaited<ReturnType<typeof getSongLyrics>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSongLyrics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSongLyricsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSongLyrics>>> = ({ signal }) => getSongLyrics(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSongLyrics>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSongLyricsQueryResult = NonNullable<Awaited<ReturnType<typeof getSongLyrics>>>
+export type GetSongLyricsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get lyrics for a song
+ */
+
+export function useGetSongLyrics<TData = Awaited<ReturnType<typeof getSongLyrics>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSongLyrics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSongLyricsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateSongLyricsUrl = (id: number,) => {
+
+
+
+
+  return `/api/songs/${id}/lyrics`
+}
+
+/**
+ * @summary Save or update lyrics for a song (admin)
+ */
+export const updateSongLyrics = async (id: number,
+    songLyricsInput: SongLyricsInput, options?: RequestInit): Promise<SongLyrics> => {
+
+  return customFetch<SongLyrics>(getUpdateSongLyricsUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      songLyricsInput,)
+  }
+);}
+
+
+
+
+export const getUpdateSongLyricsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSongLyrics>>, TError,{id: number;data: BodyType<SongLyricsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSongLyrics>>, TError,{id: number;data: BodyType<SongLyricsInput>}, TContext> => {
+
+const mutationKey = ['updateSongLyrics'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSongLyrics>>, {id: number;data: BodyType<SongLyricsInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateSongLyrics(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSongLyricsMutationResult = NonNullable<Awaited<ReturnType<typeof updateSongLyrics>>>
+    export type UpdateSongLyricsMutationBody = BodyType<SongLyricsInput>
+    export type UpdateSongLyricsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Save or update lyrics for a song (admin)
+ */
+export const useUpdateSongLyrics = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSongLyrics>>, TError,{id: number;data: BodyType<SongLyricsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSongLyrics>>,
+        TError,
+        {id: number;data: BodyType<SongLyricsInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateSongLyricsMutationOptions(options));
+    }
+
+export const getDeleteSongLyricsUrl = (id: number,) => {
+
+
+
+
+  return `/api/songs/${id}/lyrics`
+}
+
+/**
+ * @summary Remove lyrics from a song (admin)
+ */
+export const deleteSongLyrics = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteSongLyricsUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteSongLyricsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSongLyrics>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSongLyrics>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteSongLyrics'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSongLyrics>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSongLyrics(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSongLyricsMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSongLyrics>>>
+
+    export type DeleteSongLyricsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove lyrics from a song (admin)
+ */
+export const useDeleteSongLyrics = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSongLyrics>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSongLyrics>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteSongLyricsMutationOptions(options));
+    }
+
+export const getSearchSongLyricsUrl = (id: number,) => {
+
+
+
+
+  return `/api/songs/${id}/lyrics/search`
+}
+
+/**
+ * @summary Search external lyrics providers for a song (admin)
+ */
+export const searchSongLyrics = async (id: number,
+    lyricsSearchInput: LyricsSearchInput, options?: RequestInit): Promise<LyricsSearchResult> => {
+
+  return customFetch<LyricsSearchResult>(getSearchSongLyricsUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      lyricsSearchInput,)
+  }
+);}
+
+
+
+
+export const getSearchSongLyricsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof searchSongLyrics>>, TError,{id: number;data: BodyType<LyricsSearchInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof searchSongLyrics>>, TError,{id: number;data: BodyType<LyricsSearchInput>}, TContext> => {
+
+const mutationKey = ['searchSongLyrics'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof searchSongLyrics>>, {id: number;data: BodyType<LyricsSearchInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  searchSongLyrics(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SearchSongLyricsMutationResult = NonNullable<Awaited<ReturnType<typeof searchSongLyrics>>>
+    export type SearchSongLyricsMutationBody = BodyType<LyricsSearchInput>
+    export type SearchSongLyricsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Search external lyrics providers for a song (admin)
+ */
+export const useSearchSongLyrics = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof searchSongLyrics>>, TError,{id: number;data: BodyType<LyricsSearchInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof searchSongLyrics>>,
+        TError,
+        {id: number;data: BodyType<LyricsSearchInput>},
+        TContext
+      > => {
+      return useMutation(getSearchSongLyricsMutationOptions(options));
+    }
+
+export const getGetSongCooldownUrl = (id: number,) => {
+
+
+
+
+  return `/api/songs/${id}/cooldown`
+}
+
+/**
+ * @summary Get cooldown status for a song
+ */
+export const getSongCooldown = async (id: number, options?: RequestInit): Promise<CooldownStatus> => {
+
+  return customFetch<CooldownStatus>(getGetSongCooldownUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSongCooldownQueryKey = (id: number,) => {
+    return [
+    `/api/songs/${id}/cooldown`
+    ] as const;
+    }
+
+
+export const getGetSongCooldownQueryOptions = <TData = Awaited<ReturnType<typeof getSongCooldown>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSongCooldown>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSongCooldownQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSongCooldown>>> = ({ signal }) => getSongCooldown(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSongCooldown>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSongCooldownQueryResult = NonNullable<Awaited<ReturnType<typeof getSongCooldown>>>
+export type GetSongCooldownQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get cooldown status for a song
+ */
+
+export function useGetSongCooldown<TData = Awaited<ReturnType<typeof getSongCooldown>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSongCooldown>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSongCooldownQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
 export const getListQueueUrl = () => {
 
 
@@ -1025,7 +1401,7 @@ export const getCompleteQueueItemUrl = (id: number,) => {
 }
 
 /**
- * @summary Mark a queue item as completed (move to played)
+ * @summary Mark a queue item as completed (writes history)
  */
 export const completeQueueItem = async (id: number, options?: RequestInit): Promise<QueueItem> => {
 
@@ -1073,7 +1449,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CompleteQueueItemMutationError = ErrorType<unknown>
 
     /**
- * @summary Mark a queue item as completed (move to played)
+ * @summary Mark a queue item as completed (writes history)
  */
 export const useCompleteQueueItem = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeQueueItem>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -1243,7 +1619,7 @@ export const getSetQueueItemPlayingUrl = (id: number,) => {
 }
 
 /**
- * @summary Mark a queue item as now playing
+ * @summary Mark a queue item as now playing (V2 compat)
  */
 export const setQueueItemPlaying = async (id: number, options?: RequestInit): Promise<QueueItem> => {
 
@@ -1291,7 +1667,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type SetQueueItemPlayingMutationError = ErrorType<unknown>
 
     /**
- * @summary Mark a queue item as now playing
+ * @summary Mark a queue item as now playing (V2 compat)
  */
 export const useSetQueueItemPlaying = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setQueueItemPlaying>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -1302,6 +1678,76 @@ export const useSetQueueItemPlaying = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getSetQueueItemPlayingMutationOptions(options));
+    }
+
+export const getStartQueueItemUrl = (id: number,) => {
+
+
+
+
+  return `/api/queue/${id}/start`
+}
+
+/**
+ * @summary V3: Explicitly start singing — sets started_at timestamp for lyrics sync
+ */
+export const startQueueItem = async (id: number, options?: RequestInit): Promise<QueueItem> => {
+
+  return customFetch<QueueItem>(getStartQueueItemUrl(id),
+  {
+    ...options,
+    method: 'PATCH'
+
+
+  }
+);}
+
+
+
+
+export const getStartQueueItemMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startQueueItem>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startQueueItem>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['startQueueItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startQueueItem>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  startQueueItem(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartQueueItemMutationResult = NonNullable<Awaited<ReturnType<typeof startQueueItem>>>
+
+    export type StartQueueItemMutationError = ErrorType<unknown>
+
+    /**
+ * @summary V3: Explicitly start singing — sets started_at timestamp for lyrics sync
+ */
+export const useStartQueueItem = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startQueueItem>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof startQueueItem>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getStartQueueItemMutationOptions(options));
     }
 
 export const getListHistoryUrl = (params?: ListHistoryParams,) => {
@@ -1388,20 +1834,20 @@ export function useListHistory<TData = Awaited<ReturnType<typeof listHistory>>, 
 
 
 
-export const getListCategoriesUrl = () => {
+export const getListSessionsUrl = () => {
 
 
 
 
-  return `/api/categories`
+  return `/api/sessions`
 }
 
 /**
- * @summary List all categories
+ * @summary List all song sessions
  */
-export const listCategories = async ( options?: RequestInit): Promise<CategoryList> => {
+export const listSessions = async ( options?: RequestInit): Promise<SessionList> => {
 
-  return customFetch<CategoryList>(getListCategoriesUrl(),
+  return customFetch<SessionList>(getListSessionsUrl(),
   {
     ...options,
     method: 'GET'
@@ -1414,45 +1860,45 @@ export const listCategories = async ( options?: RequestInit): Promise<CategoryLi
 
 
 
-export const getListCategoriesQueryKey = () => {
+export const getListSessionsQueryKey = () => {
     return [
-    `/api/categories`
+    `/api/sessions`
     ] as const;
     }
 
 
-export const getListCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof listCategories>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListSessionsQueryOptions = <TData = Awaited<ReturnType<typeof listSessions>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSessions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListCategoriesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSessionsQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCategories>>> = ({ signal }) => listCategories({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSessions>>> = ({ signal }) => listSessions({ signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSessions>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type ListCategoriesQueryResult = NonNullable<Awaited<ReturnType<typeof listCategories>>>
-export type ListCategoriesQueryError = ErrorType<unknown>
+export type ListSessionsQueryResult = NonNullable<Awaited<ReturnType<typeof listSessions>>>
+export type ListSessionsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary List all categories
+ * @summary List all song sessions
  */
 
-export function useListCategories<TData = Awaited<ReturnType<typeof listCategories>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListSessions<TData = Awaited<ReturnType<typeof listSessions>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSessions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListCategoriesQueryOptions(options)
+  const queryOptions = getListSessionsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1465,37 +1911,37 @@ export function useListCategories<TData = Awaited<ReturnType<typeof listCategori
 
 
 
-export const getCreateCategoryUrl = () => {
+export const getCreateSessionUrl = () => {
 
 
 
 
-  return `/api/categories`
+  return `/api/sessions`
 }
 
 /**
- * @summary Create a category
+ * @summary Create and start a new song session (admin)
  */
-export const createCategory = async (categoryInput: CategoryInput, options?: RequestInit): Promise<Category> => {
+export const createSession = async (sessionInput: SessionInput, options?: RequestInit): Promise<Session> => {
 
-  return customFetch<Category>(getCreateCategoryUrl(),
+  return customFetch<Session>(getCreateSessionUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
-      categoryInput,)
+      sessionInput,)
   }
 );}
 
 
 
 
-export const getCreateCategoryMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCategory>>, TError,{data: BodyType<CategoryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createCategory>>, TError,{data: BodyType<CategoryInput>}, TContext> => {
+export const getCreateSessionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSession>>, TError,{data: BodyType<SessionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSession>>, TError,{data: BodyType<SessionInput>}, TContext> => {
 
-const mutationKey = ['createCategory'];
+const mutationKey = ['createSession'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1505,10 +1951,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCategory>>, {data: BodyType<CategoryInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSession>>, {data: BodyType<SessionInput>}> = (props) => {
           const {data} = props ?? {};
 
-          return  createCategory(data,requestOptions)
+          return  createSession(data,requestOptions)
         }
 
 
@@ -1518,110 +1964,192 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof createCategory>>>
-    export type CreateCategoryMutationBody = BodyType<CategoryInput>
-    export type CreateCategoryMutationError = ErrorType<unknown>
+    export type CreateSessionMutationResult = NonNullable<Awaited<ReturnType<typeof createSession>>>
+    export type CreateSessionMutationBody = BodyType<SessionInput>
+    export type CreateSessionMutationError = ErrorType<unknown>
 
     /**
- * @summary Create a category
+ * @summary Create and start a new song session (admin)
  */
-export const useCreateCategory = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCategory>>, TError,{data: BodyType<CategoryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+export const useCreateSession = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSession>>, TError,{data: BodyType<SessionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof createCategory>>,
+        Awaited<ReturnType<typeof createSession>>,
         TError,
-        {data: BodyType<CategoryInput>},
+        {data: BodyType<SessionInput>},
         TContext
       > => {
-      return useMutation(getCreateCategoryMutationOptions(options));
+      return useMutation(getCreateSessionMutationOptions(options));
     }
 
-export const getUpdateCategoryUrl = (id: number,) => {
+export const getGetActiveSessionUrl = () => {
 
 
 
 
-  return `/api/categories/${id}`
+  return `/api/sessions/active`
 }
 
 /**
- * @summary Update a category
+ * @summary Get the currently active session
  */
-export const updateCategory = async (id: number,
-    categoryUpdate: CategoryUpdate, options?: RequestInit): Promise<Category> => {
+export const getActiveSession = async ( options?: RequestInit): Promise<ActiveSessionResponse> => {
 
-  return customFetch<Category>(getUpdateCategoryUrl(id),
+  return customFetch<ActiveSessionResponse>(getGetActiveSessionUrl(),
   {
     ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      categoryUpdate,)
+    method: 'GET'
+
+
   }
 );}
 
 
 
 
-export const getUpdateCategoryMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCategory>>, TError,{id: number;data: BodyType<CategoryUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateCategory>>, TError,{id: number;data: BodyType<CategoryUpdate>}, TContext> => {
 
-const mutationKey = ['updateCategory'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCategory>>, {id: number;data: BodyType<CategoryUpdate>}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  updateCategory(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof updateCategory>>>
-    export type UpdateCategoryMutationBody = BodyType<CategoryUpdate>
-    export type UpdateCategoryMutationError = ErrorType<unknown>
-
-    /**
- * @summary Update a category
- */
-export const useUpdateCategory = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCategory>>, TError,{id: number;data: BodyType<CategoryUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateCategory>>,
-        TError,
-        {id: number;data: BodyType<CategoryUpdate>},
-        TContext
-      > => {
-      return useMutation(getUpdateCategoryMutationOptions(options));
+export const getGetActiveSessionQueryKey = () => {
+    return [
+    `/api/sessions/active`
+    ] as const;
     }
 
-export const getDeleteCategoryUrl = (id: number,) => {
+
+export const getGetActiveSessionQueryOptions = <TData = Awaited<ReturnType<typeof getActiveSession>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getActiveSession>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetActiveSessionQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getActiveSession>>> = ({ signal }) => getActiveSession({ signal, ...requestOptions });
 
 
 
 
-  return `/api/categories/${id}`
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActiveSession>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetActiveSessionQueryResult = NonNullable<Awaited<ReturnType<typeof getActiveSession>>>
+export type GetActiveSessionQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the currently active session
+ */
+
+export function useGetActiveSession<TData = Awaited<ReturnType<typeof getActiveSession>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getActiveSession>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetActiveSessionQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetSessionUrl = (id: number,) => {
+
+
+
+
+  return `/api/sessions/${id}`
 }
 
 /**
- * @summary Delete a category
+ * @summary Get a session with its setlist
  */
-export const deleteCategory = async (id: number, options?: RequestInit): Promise<void> => {
+export const getSession = async (id: number, options?: RequestInit): Promise<SessionDetail> => {
 
-  return customFetch<void>(getDeleteCategoryUrl(id),
+  return customFetch<SessionDetail>(getGetSessionUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSessionQueryKey = (id: number,) => {
+    return [
+    `/api/sessions/${id}`
+    ] as const;
+    }
+
+
+export const getGetSessionQueryOptions = <TData = Awaited<ReturnType<typeof getSession>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSession>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSessionQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSession>>> = ({ signal }) => getSession(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSession>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSessionQueryResult = NonNullable<Awaited<ReturnType<typeof getSession>>>
+export type GetSessionQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get a session with its setlist
+ */
+
+export function useGetSession<TData = Awaited<ReturnType<typeof getSession>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSession>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSessionQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getDeleteSessionUrl = (id: number,) => {
+
+
+
+
+  return `/api/sessions/${id}`
+}
+
+/**
+ * @summary Delete a session (admin)
+ */
+export const deleteSession = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteSessionUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -1633,11 +2161,11 @@ export const deleteCategory = async (id: number, options?: RequestInit): Promise
 
 
 
-export const getDeleteCategoryMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCategory>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteCategory>>, TError,{id: number}, TContext> => {
+export const getDeleteSessionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSession>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSession>>, TError,{id: number}, TContext> => {
 
-const mutationKey = ['deleteCategory'];
+const mutationKey = ['deleteSession'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1647,10 +2175,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCategory>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSession>>, {id: number}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteCategory(id,requestOptions)
+          return  deleteSession(id,requestOptions)
         }
 
 
@@ -1660,23 +2188,170 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCategory>>>
+    export type DeleteSessionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSession>>>
 
-    export type DeleteCategoryMutationError = ErrorType<unknown>
+    export type DeleteSessionMutationError = ErrorType<unknown>
 
     /**
- * @summary Delete a category
+ * @summary Delete a session (admin)
  */
-export const useDeleteCategory = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCategory>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+export const useDeleteSession = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSession>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteCategory>>,
+        Awaited<ReturnType<typeof deleteSession>>,
         TError,
         {id: number},
         TContext
       > => {
-      return useMutation(getDeleteCategoryMutationOptions(options));
+      return useMutation(getDeleteSessionMutationOptions(options));
     }
+
+export const getEndSessionUrl = (id: number,) => {
+
+
+
+
+  return `/api/sessions/${id}/end`
+}
+
+/**
+ * @summary End a song session (admin)
+ */
+export const endSession = async (id: number, options?: RequestInit): Promise<Session> => {
+
+  return customFetch<Session>(getEndSessionUrl(id),
+  {
+    ...options,
+    method: 'PATCH'
+
+
+  }
+);}
+
+
+
+
+export const getEndSessionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof endSession>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof endSession>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['endSession'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof endSession>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  endSession(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EndSessionMutationResult = NonNullable<Awaited<ReturnType<typeof endSession>>>
+
+    export type EndSessionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary End a song session (admin)
+ */
+export const useEndSession = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof endSession>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof endSession>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getEndSessionMutationOptions(options));
+    }
+
+export const getExportSessionUrl = (id: number,) => {
+
+
+
+
+  return `/api/sessions/${id}/export`
+}
+
+/**
+ * @summary Export session setlist as plain text (for Discord posting)
+ */
+export const exportSession = async (id: number, options?: RequestInit): Promise<SessionExport> => {
+
+  return customFetch<SessionExport>(getExportSessionUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportSessionQueryKey = (id: number,) => {
+    return [
+    `/api/sessions/${id}/export`
+    ] as const;
+    }
+
+
+export const getExportSessionQueryOptions = <TData = Awaited<ReturnType<typeof exportSession>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportSession>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportSessionQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportSession>>> = ({ signal }) => exportSession(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportSession>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ExportSessionQueryResult = NonNullable<Awaited<ReturnType<typeof exportSession>>>
+export type ExportSessionQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Export session setlist as plain text (for Discord posting)
+ */
+
+export function useExportSession<TData = Awaited<ReturnType<typeof exportSession>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportSession>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getExportSessionQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getVerifyObsKeyUrl = (params?: VerifyObsKeyParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -1750,6 +2425,83 @@ export function useVerifyObsKey<TData = Awaited<ReturnType<typeof verifyObsKey>>
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getVerifyObsKeyQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetObsLyricsCurrentUrl = () => {
+
+
+
+
+  return `/api/obs/lyrics/current`
+}
+
+/**
+ * @summary Get current song + lyrics for OBS lyrics overlay (polls every 2s)
+ */
+export const getObsLyricsCurrent = async ( options?: RequestInit): Promise<ObsLyricsState> => {
+
+  return customFetch<ObsLyricsState>(getGetObsLyricsCurrentUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetObsLyricsCurrentQueryKey = () => {
+    return [
+    `/api/obs/lyrics/current`
+    ] as const;
+    }
+
+
+export const getGetObsLyricsCurrentQueryOptions = <TData = Awaited<ReturnType<typeof getObsLyricsCurrent>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getObsLyricsCurrent>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetObsLyricsCurrentQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getObsLyricsCurrent>>> = ({ signal }) => getObsLyricsCurrent({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getObsLyricsCurrent>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetObsLyricsCurrentQueryResult = NonNullable<Awaited<ReturnType<typeof getObsLyricsCurrent>>>
+export type GetObsLyricsCurrentQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get current song + lyrics for OBS lyrics overlay (polls every 2s)
+ */
+
+export function useGetObsLyricsCurrent<TData = Awaited<ReturnType<typeof getObsLyricsCurrent>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getObsLyricsCurrent>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetObsLyricsCurrentQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

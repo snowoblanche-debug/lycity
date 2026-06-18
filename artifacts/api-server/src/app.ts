@@ -1,10 +1,16 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import path from "path";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
+
+const v3Dist = path.resolve(
+  import.meta.dirname,
+  "../../../artifacts/linying-v3/dist/public",
+);
 
 app.use(
   pinoHttp({
@@ -30,5 +36,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+app.use("/v3", express.static(v3Dist));
+app.use("/v3/*path", (_req, res) => {
+  res.sendFile(path.join(v3Dist, "index.html"));
+});
 
 export default app;

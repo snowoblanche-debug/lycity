@@ -5,6 +5,7 @@
  * 聆櫻聖境點歌系統 API
  * OpenAPI spec version: 0.1.0
  */
+import type { SongCooldownMode } from './songCooldownMode';
 
 export interface Song {
   id: number;
@@ -21,4 +22,14 @@ export interface Song {
   hasPitchWarning: boolean;
   status?: string;
   createdAt: string;
+  /** @nullable */
+  lyricsText?: string | null;
+  /** @nullable */
+  lyricsFormat?: string | null;
+  /** @nullable */
+  lyricsSource?: string | null;
+  /** @nullable */
+  lyricsUpdatedAt?: string | null;
+  cooldownDays: number;
+  cooldownMode: SongCooldownMode;
 }

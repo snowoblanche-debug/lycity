@@ -1,0 +1,409 @@
+# V3 Phase 1 Architecture Review
+
+Overall architecture is approved.
+
+Please proceed with implementation after applying the following adjustments.
+
+---
+
+## 1. V3 Deployment Strategy
+
+Approved:
+
+V2 remains untouched.
+
+V3 develops independently.
+
+Current proposal:
+
+artifacts/
+├── linying/
+├── api-server/
+└── linying-v3/
+
+is correct.
+
+---
+
+### Route
+
+Use:
+
+/v3
+
+during development.
+
+Do NOT replace the production homepage yet.
+
+Migration to production will be discussed after V3 is stable.
+
+---
+
+## 2. Song Session
+
+Approved.
+
+This is an important feature.
+
+---
+
+### Session Title
+
+Default:
+
+YYYY-MM-DD 歌回
+
+Examples:
+
+2026-06-18 歌回
+
+2026-07-05 朝活羽你
+
+Streamer can edit manually.
+
+---
+
+### Session End Behavior
+
+Current proposal:
+
+Auto-complete all playing songs.
+
+Rejected.
+
+---
+
+Use:
+
+If any queue item is currently playing:
+
+Show confirmation dialog.
+
+Example:
+
+"There is currently a song being performed.
+
+Please complete or skip it before ending the session."
+
+Do not automatically complete songs.
+
+Reason:
+
+Automatic completion would create incorrect history records.
+
+---
+
+## 3. Queue Workflow
+
+Approved.
+
+Final workflow:
+
+Waiting
+↓
+🎵 開始演唱
+↓
+Playing
+↓
+✅ 完唱
+↓
+History
+
+or
+
+Playing
+↓
+⏭ 跳過
+
+---
+
+### started_at
+
+Use:
+
+started_at = NOW()
+
+when the streamer clicks:
+
+🎵 開始演唱
+
+This is the correct synchronization point for lyrics.
+
+---
+
+## 4. Cooldown System
+
+Approved.
+
+---
+
+### UI
+
+Do NOT limit cooldown to:
+
+0 / 7 / 14 / 30
+
+Use:
+
+Numeric Input
+
+Examples:
+
+0
+
+3
+
+7
+
+14
+
+30
+
+90
+
+365
+
+Future flexibility is more important.
+
+---
+
+### Default
+
+cooldown_days = 0
+
+cooldown_mode = warn
+
+---
+
+## 5. Lyrics System
+
+Approved.
+
+---
+
+### Lyrics Cache
+
+Required.
+
+Search DB first.
+
+External providers only when cache missing.
+
+---
+
+### Lyrics Source
+
+Display:
+
+LrcLib
+
+NetEase
+
+Manual
+
+for troubleshooting.
+
+---
+
+### Lyrics Search
+
+Add:
+
+Auto Search
+
+Workflow:
+
+Song Title + Artist
+↓
+Search both providers
+↓
+Merge results
+↓
+Show best matches
+
+---
+
+### Preview
+
+Before import:
+
+Show:
+
+First 10 lines
+
+Format
+
+Source
+
+---
+
+## 6. OBS Lyrics Overlay
+
+Approved.
+
+---
+
+### Polling
+
+2 seconds is acceptable for Phase 1.
+
+Future WebSocket support can be added later.
+
+---
+
+### Overlay Modes
+
+Phase 1:
+
+Simple Mode
+
+Display:
+
+Song Title
+
+Current Line
+
+Requester
+
+Request Note
+
+---
+
+Prepare architecture for:
+
+KTV Mode
+
+Previous Line
+
+Current Line
+
+Next Line
+
+but do not implement yet.
+
+---
+
+## 7. Request Notes
+
+Approved.
+
+---
+
+Display on:
+
+Queue
+
+History
+
+OBS Overlay
+
+---
+
+### Length Limit
+
+Please limit to:
+
+100 characters
+
+to avoid OBS abuse.
+
+---
+
+## 8. History Preservation
+
+Important.
+
+When writing song_history:
+
+Also store:
+
+request_note
+
+session_id
+
+requester
+
+language
+
+tags
+
+lyrics_source
+
+This avoids losing historical context later.
+
+---
+
+## 9. V2 Compatibility
+
+Critical requirement.
+
+All new columns must be:
+
+Nullable
+
+or
+
+Have safe defaults.
+
+No existing functionality may break.
+
+Current production database must continue working immediately after migration.
+
+---
+
+## 10. Future Multi-Streamer
+
+Approved for Phase 2.
+
+Do NOT connect streamer_id yet.
+
+Only prepare schema.
+
+No data migration required in Phase 1.
+
+---
+
+## 11. Additional Feature Request
+
+Please add:
+
+Session Export
+
+When a session ends:
+
+Generate:
+
+Tonight's Setlist
+
+Example:
+
+2026-06-18 歌回
+
+1. Ring Ring Ring
+2. 妥協
+3. カタオモイ
+4. 雪Distance
+
+Copy Button
+
+for Discord posting.
+
+This can be a simple text export.
+
+No PDF or image generation required.
+
+---
+
+## Final Approval
+
+Proceed with:
+
+* Song Sessions
+* Lyrics System
+* Cooldown System
+* Request Notes
+* OBS Lyrics Overlay
+
+Keep V2 untouched.
+
+Implement only Phase 1.

@@ -9,4 +9,5 @@
 export type ListHistoryParams = {
 page?: number;
 limit?: number;
+sessionId?: number;
 };

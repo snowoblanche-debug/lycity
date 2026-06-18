@@ -44,7 +44,13 @@ export const ListSongsResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 })),
   "total": zod.number(),
   "page": zod.number(),
@@ -64,7 +70,9 @@ export const CreateSongBody = zod.object({
   "categories": zod.array(zod.string()).optional(),
   "youtubeUrl": zod.string().nullish(),
   "isPracticing": zod.boolean().optional(),
-  "hasPitchWarning": zod.boolean().optional()
+  "hasPitchWarning": zod.boolean().optional(),
+  "cooldownDays": zod.number().optional(),
+  "cooldownMode": zod.string().optional()
 })
 
 
@@ -87,7 +95,13 @@ export const GetSongResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 })
 
 
@@ -107,7 +121,9 @@ export const UpdateSongBody = zod.object({
   "categories": zod.array(zod.string()).optional(),
   "youtubeUrl": zod.string().nullish(),
   "isPracticing": zod.boolean().optional(),
-  "hasPitchWarning": zod.boolean().optional()
+  "hasPitchWarning": zod.boolean().optional(),
+  "cooldownDays": zod.number().optional(),
+  "cooldownMode": zod.string().optional()
 })
 
 export const UpdateSongResponse = zod.object({
@@ -122,7 +138,13 @@ export const UpdateSongResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 })
 
 
@@ -160,7 +182,13 @@ export const AnalyzeUrlResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 }))
 })
 
@@ -200,6 +228,92 @@ export const ImportFromGoogleSheetResponse = zod.object({
 
 
 /**
+ * @summary Get lyrics for a song
+ */
+export const GetSongLyricsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetSongLyricsResponse = zod.object({
+  "songId": zod.number(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Save or update lyrics for a song (admin)
+ */
+export const UpdateSongLyricsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateSongLyricsBody = zod.object({
+  "lyricsText": zod.string(),
+  "lyricsFormat": zod.enum(['lrc', 'krc', 'yrc', 'plain']),
+  "lyricsSource": zod.enum(['lrclib', 'netease', 'manual'])
+})
+
+export const UpdateSongLyricsResponse = zod.object({
+  "songId": zod.number(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Remove lyrics from a song (admin)
+ */
+export const DeleteSongLyricsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Search external lyrics providers for a song (admin)
+ */
+export const SearchSongLyricsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const SearchSongLyricsBody = zod.object({
+  "provider": zod.enum(['lrclib', 'netease', 'auto']),
+  "title": zod.string().nullish(),
+  "artist": zod.string().nullish()
+})
+
+export const SearchSongLyricsResponse = zod.object({
+  "results": zod.array(zod.object({
+  "provider": zod.string(),
+  "lyricsText": zod.string(),
+  "lyricsFormat": zod.string(),
+  "duration": zod.number().nullish(),
+  "previewLines": zod.array(zod.string())
+}))
+})
+
+
+/**
+ * @summary Get cooldown status for a song
+ */
+export const GetSongCooldownParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetSongCooldownResponse = zod.object({
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block']),
+  "lastPerformed": zod.string().nullish(),
+  "remainingDays": zod.number().optional(),
+  "isInCooldown": zod.boolean()
+})
+
+
+/**
  * @summary Get current queue
  */
 export const ListQueueResponse = zod.object({
@@ -218,13 +332,22 @@ export const ListQueueResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 }).optional(),
   "requesterName": zod.string(),
   "note": zod.string().nullish(),
   "position": zod.number(),
   "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "startedAt": zod.string().nullish(),
+  "completedAt": zod.string().nullish(),
+  "sessionId": zod.number().nullish()
 })),
   "total": zod.number()
 })
@@ -233,10 +356,14 @@ export const ListQueueResponse = zod.object({
 /**
  * @summary Add a song to the queue
  */
+export const addToQueueBodyNoteMax = 100;
+
+
+
 export const AddToQueueBody = zod.object({
   "songId": zod.number(),
   "requesterName": zod.string(),
-  "note": zod.string().nullish()
+  "note": zod.string().max(addToQueueBodyNoteMax).nullish()
 })
 
 
@@ -270,18 +397,27 @@ export const SkipQueueItemResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 }).optional(),
   "requesterName": zod.string(),
   "note": zod.string().nullish(),
   "position": zod.number(),
   "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "startedAt": zod.string().nullish(),
+  "completedAt": zod.string().nullish(),
+  "sessionId": zod.number().nullish()
 })
 
 
 /**
- * @summary Mark a queue item as completed (move to played)
+ * @summary Mark a queue item as completed (writes history)
  */
 export const CompleteQueueItemParams = zod.object({
   "id": zod.coerce.number()
@@ -302,13 +438,22 @@ export const CompleteQueueItemResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 }).optional(),
   "requesterName": zod.string(),
   "note": zod.string().nullish(),
   "position": zod.number(),
   "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "startedAt": zod.string().nullish(),
+  "completedAt": zod.string().nullish(),
+  "sessionId": zod.number().nullish()
 })
 
 
@@ -335,13 +480,22 @@ export const ReorderQueueResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 }).optional(),
   "requesterName": zod.string(),
   "note": zod.string().nullish(),
   "position": zod.number(),
   "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "startedAt": zod.string().nullish(),
+  "completedAt": zod.string().nullish(),
+  "sessionId": zod.number().nullish()
 })),
   "total": zod.number()
 })
@@ -366,13 +520,22 @@ export const GetCurrentPlayingResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 }).optional(),
   "requesterName": zod.string(),
   "note": zod.string().nullish(),
   "position": zod.number(),
   "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "startedAt": zod.string().nullish(),
+  "completedAt": zod.string().nullish(),
+  "sessionId": zod.number().nullish()
 }).optional(),
   "next": zod.object({
   "id": zod.number(),
@@ -389,19 +552,28 @@ export const GetCurrentPlayingResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 }).optional(),
   "requesterName": zod.string(),
   "note": zod.string().nullish(),
   "position": zod.number(),
   "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "startedAt": zod.string().nullish(),
+  "completedAt": zod.string().nullish(),
+  "sessionId": zod.number().nullish()
 }).optional()
 })
 
 
 /**
- * @summary Mark a queue item as now playing
+ * @summary Mark a queue item as now playing (V2 compat)
  */
 export const SetQueueItemPlayingParams = zod.object({
   "id": zod.coerce.number()
@@ -422,13 +594,63 @@ export const SetQueueItemPlayingResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 }).optional(),
   "requesterName": zod.string(),
   "note": zod.string().nullish(),
   "position": zod.number(),
   "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "startedAt": zod.string().nullish(),
+  "completedAt": zod.string().nullish(),
+  "sessionId": zod.number().nullish()
+})
+
+
+/**
+ * @summary V3: Explicitly start singing — sets started_at timestamp for lyrics sync
+ */
+export const StartQueueItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const StartQueueItemResponse = zod.object({
+  "id": zod.number(),
+  "songId": zod.number(),
+  "song": zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "artist": zod.string(),
+  "language": zod.string(),
+  "playCount": zod.number(),
+  "primaryTag": zod.string().nullish(),
+  "categories": zod.array(zod.string()),
+  "youtubeUrl": zod.string().nullable(),
+  "isPracticing": zod.boolean(),
+  "hasPitchWarning": zod.boolean(),
+  "status": zod.string().optional(),
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
+}).optional(),
+  "requesterName": zod.string(),
+  "note": zod.string().nullish(),
+  "position": zod.number(),
+  "status": zod.enum(['waiting', 'playing', 'completed', 'skipped']),
+  "createdAt": zod.string(),
+  "startedAt": zod.string().nullish(),
+  "completedAt": zod.string().nullish(),
+  "sessionId": zod.number().nullish()
 })
 
 
@@ -440,7 +662,8 @@ export const listHistoryQueryLimitDefault = 50;
 
 export const ListHistoryQueryParams = zod.object({
   "page": zod.coerce.number().default(listHistoryQueryPageDefault),
-  "limit": zod.coerce.number().default(listHistoryQueryLimitDefault)
+  "limit": zod.coerce.number().default(listHistoryQueryLimitDefault),
+  "sessionId": zod.coerce.number().optional()
 })
 
 export const ListHistoryResponse = zod.object({
@@ -454,7 +677,10 @@ export const ListHistoryResponse = zod.object({
   "tags": zod.array(zod.string()),
   "vodUrl": zod.string().nullish(),
   "timestampText": zod.string().nullish(),
-  "performedAt": zod.string()
+  "performedAt": zod.string(),
+  "sessionId": zod.number().nullish(),
+  "requestNote": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish()
 })),
   "total": zod.number(),
   "page": zod.number(),
@@ -463,52 +689,119 @@ export const ListHistoryResponse = zod.object({
 
 
 /**
- * @summary List all categories
+ * @summary List all song sessions
  */
-export const ListCategoriesResponse = zod.object({
-  "categories": zod.array(zod.object({
+export const ListSessionsResponse = zod.object({
+  "sessions": zod.array(zod.object({
   "id": zod.number(),
-  "name": zod.string(),
-  "type": zod.enum(['language', 'theme', 'season', 'custom']),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "startedAt": zod.string().nullish(),
+  "endedAt": zod.string().nullish(),
   "createdAt": zod.string()
 }))
 })
 
 
 /**
- * @summary Create a category
+ * @summary Create and start a new song session (admin)
  */
-export const CreateCategoryBody = zod.object({
-  "name": zod.string(),
-  "type": zod.enum(['language', 'theme', 'season', 'custom'])
+export const CreateSessionBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string().nullish()
 })
 
 
 /**
- * @summary Update a category
+ * @summary Get the currently active session
  */
-export const UpdateCategoryParams = zod.object({
+export const GetActiveSessionResponse = zod.object({
+  "session": zod.union([zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "startedAt": zod.string().nullish(),
+  "endedAt": zod.string().nullish(),
+  "createdAt": zod.string()
+}),zod.null()])
+})
+
+
+/**
+ * @summary Get a session with its setlist
+ */
+export const GetSessionParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const UpdateCategoryBody = zod.object({
-  "name": zod.string().optional(),
-  "type": zod.enum(['language', 'theme', 'season', 'custom']).optional()
+export const GetSessionResponse = zod.object({
+  "session": zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "startedAt": zod.string().nullish(),
+  "endedAt": zod.string().nullish(),
+  "createdAt": zod.string()
+}),
+  "setlist": zod.array(zod.object({
+  "id": zod.number(),
+  "songId": zod.number().nullish(),
+  "songTitle": zod.string(),
+  "artist": zod.string(),
+  "requester": zod.string(),
+  "language": zod.string(),
+  "tags": zod.array(zod.string()),
+  "vodUrl": zod.string().nullish(),
+  "timestampText": zod.string().nullish(),
+  "performedAt": zod.string(),
+  "sessionId": zod.number().nullish(),
+  "requestNote": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish()
+})),
+  "songCount": zod.number()
 })
 
-export const UpdateCategoryResponse = zod.object({
+
+/**
+ * @summary Delete a session (admin)
+ */
+export const DeleteSessionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary End a song session (admin)
+ */
+export const EndSessionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const EndSessionResponse = zod.object({
   "id": zod.number(),
-  "name": zod.string(),
-  "type": zod.enum(['language', 'theme', 'season', 'custom']),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "startedAt": zod.string().nullish(),
+  "endedAt": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
 
 /**
- * @summary Delete a category
+ * @summary Export session setlist as plain text (for Discord posting)
  */
-export const DeleteCategoryParams = zod.object({
+export const ExportSessionParams = zod.object({
   "id": zod.coerce.number()
+})
+
+export const ExportSessionResponse = zod.object({
+  "title": zod.string(),
+  "text": zod.string(),
+  "songCount": zod.number()
 })
 
 
@@ -521,6 +814,23 @@ export const VerifyObsKeyQueryParams = zod.object({
 
 export const VerifyObsKeyResponse = zod.object({
   "valid": zod.boolean()
+})
+
+
+/**
+ * @summary Get current song + lyrics for OBS lyrics overlay (polls every 2s)
+ */
+export const GetObsLyricsCurrentResponse = zod.object({
+  "hasCurrentSong": zod.boolean(),
+  "song": zod.object({
+  "title": zod.string().optional(),
+  "artist": zod.string().optional()
+}).optional(),
+  "startedAt": zod.string().nullish(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "requester": zod.string().nullish(),
+  "requestNote": zod.string().nullish()
 })
 
 
@@ -581,7 +891,13 @@ export const GetStatsResponse = zod.object({
   "isPracticing": zod.boolean(),
   "hasPitchWarning": zod.boolean(),
   "status": zod.string().optional(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "lyricsText": zod.string().nullish(),
+  "lyricsFormat": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish(),
+  "lyricsUpdatedAt": zod.string().nullish(),
+  "cooldownDays": zod.number(),
+  "cooldownMode": zod.enum(['warn', 'block'])
 })),
   "languageBreakdown": zod.array(zod.object({
   "language": zod.string(),
@@ -597,7 +913,10 @@ export const GetStatsResponse = zod.object({
   "tags": zod.array(zod.string()),
   "vodUrl": zod.string().nullish(),
   "timestampText": zod.string().nullish(),
-  "performedAt": zod.string()
+  "performedAt": zod.string(),
+  "sessionId": zod.number().nullish(),
+  "requestNote": zod.string().nullish(),
+  "lyricsSource": zod.string().nullish()
 })),
   "monthly": zod.object({
   "totalCompleted": zod.number(),
