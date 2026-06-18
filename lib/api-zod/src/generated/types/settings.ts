@@ -13,6 +13,8 @@ export interface Settings {
   /** @nullable */
   siteSubtitle?: string | null;
   /** @nullable */
+  siteUrl?: string | null;
+  /** @nullable */
   bannerText?: string | null;
   obsKeyEnabled: boolean;
   testMode: boolean;

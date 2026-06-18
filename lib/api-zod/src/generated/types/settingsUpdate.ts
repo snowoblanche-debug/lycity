@@ -13,6 +13,8 @@ export interface SettingsUpdate {
   /** @nullable */
   siteSubtitle?: string | null;
   /** @nullable */
+  siteUrl?: string | null;
+  /** @nullable */
   bannerText?: string | null;
   /** @nullable */
   obsKey?: string | null;

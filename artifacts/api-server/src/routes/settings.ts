@@ -25,6 +25,7 @@ router.get("/settings", async (_req, res): Promise<void> => {
     bannerImageUrl: settings.bannerImageUrl,
     siteName: settings.siteName,
     siteSubtitle: settings.siteSubtitle,
+    siteUrl: settings.siteUrl,
     bannerText: settings.bannerText,
     obsKeyEnabled: !!settings.obsKey,
     testMode: settings.testMode,
@@ -44,6 +45,7 @@ router.patch("/settings", requireAdmin, async (req, res): Promise<void> => {
   if (parsed.data.bannerImageUrl !== undefined) updateData["bannerImageUrl"] = parsed.data.bannerImageUrl;
   if (parsed.data.siteName !== undefined) updateData["siteName"] = parsed.data.siteName;
   if (parsed.data.siteSubtitle !== undefined) updateData["siteSubtitle"] = parsed.data.siteSubtitle;
+  if ((parsed.data as any).siteUrl !== undefined) updateData["siteUrl"] = (parsed.data as any).siteUrl;
   if (parsed.data.bannerText !== undefined) updateData["bannerText"] = parsed.data.bannerText;
   if ((req.body as { obsKey?: string | null }).obsKey !== undefined) {
     updateData["obsKey"] = (req.body as { obsKey?: string | null }).obsKey || null;
@@ -63,6 +65,7 @@ router.patch("/settings", requireAdmin, async (req, res): Promise<void> => {
     bannerImageUrl: result.bannerImageUrl,
     siteName: result.siteName,
     siteSubtitle: result.siteSubtitle,
+    siteUrl: result.siteUrl,
     bannerText: result.bannerText,
     obsKeyEnabled: !!result.obsKey,
     testMode: result.testMode,

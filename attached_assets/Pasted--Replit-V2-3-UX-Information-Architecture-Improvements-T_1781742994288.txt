@@ -1,0 +1,306 @@
+直接貼給 Replit：
+
+V2.3 UX & Information Architecture Improvements
+
+The current version is functional, but there are still several UX issues that impact streamer usability.
+
+Please implement the following improvements.
+
+1. CATEGORY MANAGEMENT READABILITY
+
+Current issue:
+
+The Category Management page still has poor text contrast.
+
+Examples:
+
+名稱
+類型
+操作
+
+and category names:
+
+神曲
+中文
+日語
+英語
+
+blend into the background.
+
+Readability is currently below WCAG AA.
+
+Required Fix
+
+Table Headers:
+
+color: #243447;
+font-weight: 700;
+
+Table Content:
+
+color: #374151;
+font-weight: 500;
+
+Category Type Badges:
+
+color: #374151;
+background: #F3F4F6;
+border: 1px solid #D1D5DB;
+
+Do NOT use:
+
+opacity: 0.5;
+opacity: 0.6;
+
+for text.
+
+Text should remain readable even on bright displays.
+
+2. OBS URL SHOULD USE SITE BRANDING
+
+Current issue:
+
+OBS URL displays internal Replit hostname.
+
+Example:
+
+https://87356162-b589-4487-xxxx.replit.dev/obs
+
+This is confusing for streamers.
+
+Required Fix
+
+OBS URL should use the configured public site URL.
+
+Add new setting:
+
+Site URL
+
+Example:
+
+https://ly.city
+
+OBS URL preview should become:
+
+Public:
+
+https://ly.city/obs
+
+Protected:
+
+https://ly.city/obs?key=xxxxx
+
+
+Logic:
+
+```text
+settings.site_url
++
+/obs
+
+instead of:
+
+window.location.origin
+3. PRIMARY TAG / SECONDARY TAG SYSTEM
+
+Current song tagging system is flat.
+
+All tags are treated equally.
+
+This becomes difficult to manage when the library grows to 300~1000 songs.
+
+Database Changes
+
+Songs table:
+
+primary_tag_id
+
+New relationship:
+
+Song
+├── Primary Tag (1)
+└── Secondary Tags (many)
+
+Example:
+
+Song:
+
+受協
+
+Primary Tag:
+
+抒情
+
+Secondary Tags:
+
+EMO
+神曲
+
+
+---
+
+## Admin Edit Song
+
+Replace current tag selector with:
+
+### Primary Tag
+
+Single Select
+
+```text
+抒情
+動漫
+神曲
+季節
+流行
+...
+
+Only one can be selected.
+
+Secondary Tags
+
+Multi Select
+
+EMO
+RAP
+外文
+破音警告
+冬
+夏
+春
+秋
+...
+
+Multiple allowed.
+
+Homepage Display
+
+Current:
+
+受協
+
+#抒情 #EMO #神曲
+
+Replace with:
+
+受協
+
+[抒情]
+
+EMO · 神曲
+
+or
+
+受協
+
+🏷 抒情
+EMO · 神曲
+
+Primary tag should visually stand out.
+
+Secondary tags should be lower emphasis.
+
+Filtering
+
+Homepage category filter should use:
+
+Primary Tag
+
+instead of searching every tag.
+
+This produces cleaner browsing.
+
+4. REQUESTER LEADERBOARD QUICK ACCESS
+
+Current requester leaderboard exists:
+
+/admin/requester-stats
+
+but is difficult to discover.
+
+Admin Dashboard
+
+In Quick Actions section add:
+
+歌曲管理
+點歌管理
+演唱紀錄
+點歌者排行
+系統設定
+
+All should be clickable cards.
+
+Requester Statistics Card
+
+Add card:
+
+點歌者排行
+查看觀眾點歌統計
+
+Icon:
+
+Users
+
+
+Click:
+
+```text
+/admin/requester-stats
+5. FUTURE REQUESTER DETAIL PAGE PREPARATION
+
+Not required to implement fully yet.
+
+But prepare architecture.
+
+When clicking a requester:
+
+Example:
+
+123
+
+Open:
+
+/admin/requesters/123
+
+Future page should support:
+
+總點歌數
+
+不同歌曲數
+
+最近點歌
+
+最常點歌曲
+
+點歌歷史
+
+Please prepare routes and schema for future expansion.
+
+GOAL
+
+This update should improve:
+
+Readability
+Streamer workflow
+Large library scalability
+Tag organization
+OBS usability
+Discoverability of requester statistics
+
+Priority order:
+
+Primary / Secondary Tag System
+Category Readability Fix
+OBS Site URL Branding
+Requester Leaderboard Shortcut
+Future Requester Detail Architecture
+
+After implementation, please show:
+
+Updated database schema
+songs table changes
+tag relationship changes
+homepage display logic
+filtering logic
+OBS URL generation logic
+screenshots of Category Management and Song Edit UI after the redesign.

@@ -531,6 +531,7 @@ export const GetSettingsResponse = zod.object({
   "bannerImageUrl": zod.string().nullable(),
   "siteName": zod.string(),
   "siteSubtitle": zod.string().nullish(),
+  "siteUrl": zod.string().nullish(),
   "bannerText": zod.string().nullish(),
   "obsKeyEnabled": zod.boolean(),
   "testMode": zod.boolean()
@@ -544,6 +545,7 @@ export const UpdateSettingsBody = zod.object({
   "bannerImageUrl": zod.string().nullish(),
   "siteName": zod.string().optional(),
   "siteSubtitle": zod.string().nullish(),
+  "siteUrl": zod.string().nullish(),
   "bannerText": zod.string().nullish(),
   "obsKey": zod.string().nullish(),
   "testMode": zod.boolean().optional()
@@ -553,6 +555,7 @@ export const UpdateSettingsResponse = zod.object({
   "bannerImageUrl": zod.string().nullable(),
   "siteName": zod.string(),
   "siteSubtitle": zod.string().nullish(),
+  "siteUrl": zod.string().nullish(),
   "bannerText": zod.string().nullish(),
   "obsKeyEnabled": zod.boolean(),
   "testMode": zod.boolean()

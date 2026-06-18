@@ -242,13 +242,22 @@ export default function HomePage() {
                       </h3>
                       <StatusBadge status={(song as any).status} tags={song.categories} />
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm flex-wrap">
                       <span className="text-[#4B5563] font-medium">{song.artist}</span>
-                      <span className="w-0.5 h-0.5 rounded-full bg-[#6B7280]/40" />
+                      <span className="w-0.5 h-0.5 rounded-full bg-[#6B7280]/40 flex-shrink-0" />
                       <span className="text-[#6B7280]">{song.language}</span>
+                      {(song as any).primaryTag && (
+                        <>
+                          <span className="w-0.5 h-0.5 rounded-full bg-[#6B7280]/40 flex-shrink-0" />
+                          <span className="text-xs px-1.5 py-0.5 rounded font-semibold"
+                            style={{ background: "rgba(112,136,163,0.14)", color: "#243447", border: "1px solid rgba(112,136,163,0.28)" }}>
+                            {(song as any).primaryTag}
+                          </span>
+                        </>
+                      )}
                       {song.categories && song.categories.length > 0 && (
                         <>
-                          <span className="w-0.5 h-0.5 rounded-full bg-[#6B7280]/40" />
+                          <span className="w-0.5 h-0.5 rounded-full bg-[#6B7280]/40 flex-shrink-0" />
                           <span className="text-[#6B7280] text-xs">{song.categories.slice(0, 3).join(" · ")}</span>
                         </>
                       )}

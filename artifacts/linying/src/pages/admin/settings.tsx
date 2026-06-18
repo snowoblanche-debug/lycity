@@ -19,6 +19,7 @@ export default function AdminSettings() {
   const [formData, setFormData] = useState({
     siteName: "",
     siteSubtitle: "",
+    siteUrl: "",
     bannerImageUrl: ""
   });
 
@@ -33,7 +34,8 @@ export default function AdminSettings() {
     if (settings) {
       setFormData({
         siteName: settings.siteName || "",
-        siteSubtitle: (settings as { siteSubtitle?: string | null }).siteSubtitle || "",
+        siteSubtitle: (settings as any).siteSubtitle || "",
+        siteUrl: (settings as any).siteUrl || "",
         bannerImageUrl: settings.bannerImageUrl || ""
       });
       setTestMode(settings.testMode ?? false);
@@ -62,6 +64,7 @@ export default function AdminSettings() {
       data: {
         siteName: formData.siteName || undefined,
         siteSubtitle: formData.siteSubtitle || null,
+        siteUrl: formData.siteUrl || null,
         bannerImageUrl: formData.bannerImageUrl || null,
         obsKey: obsKey || null,
         testMode,
@@ -105,9 +108,8 @@ export default function AdminSettings() {
     setObsKey(key);
   };
 
-  const obsUrl = obsKey
-    ? `${window.location.origin}/obs?key=${obsKey}`
-    : `${window.location.origin}/obs`;
+  const obsBase = formData.siteUrl?.trim() || window.location.origin;
+  const obsUrl = obsKey ? `${obsBase}/obs?key=${obsKey}` : `${obsBase}/obs`;
 
   const copyObsUrl = () => {
     navigator.clipboard.writeText(obsUrl);
@@ -217,6 +219,16 @@ export default function AdminSettings() {
                     placeholder="點播喜歡的歌曲，一起留下今晚的旋律"
                   />
                   <p className="text-xs text-muted-foreground">顯示在首頁橫幅的網站名稱下方</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="siteUrl" className="text-sm font-medium">公開網址 <span className="text-muted-foreground font-normal text-xs">（選填）</span></Label>
+                  <Input
+                    id="siteUrl"
+                    value={formData.siteUrl}
+                    onChange={e => setFormData({ ...formData, siteUrl: e.target.value })}
+                    placeholder="https://ly.city"
+                  />
+                  <p className="text-xs text-muted-foreground">用於 OBS 網址顯示。若設定 <code className="bg-muted px-1 rounded">https://ly.city</code>，OBS 網址將顯示為 <code className="bg-muted px-1 rounded">https://ly.city/obs</code></p>
                 </div>
               </>
             )}

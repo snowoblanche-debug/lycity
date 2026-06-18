@@ -9,6 +9,7 @@ export const settingsTable = pgTable("settings", {
   siteSubtitle: text("site_subtitle"),
   bannerText: text("banner_text"),
   obsKey: text("obs_key"),
+  siteUrl: text("site_url"),
   testMode: boolean("test_mode").notNull().default(false),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

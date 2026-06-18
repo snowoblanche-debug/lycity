@@ -102,17 +102,19 @@ type FormData = {
   isPracticing: boolean;
   hasPitchWarning: boolean;
   categories: string[];
+  primaryTag: string;
 };
 
 const defaultForm: FormData = {
   title: "", artist: "", language: "日文", status: "已解鎖",
-  youtubeUrl: "", isPracticing: false, hasPitchWarning: false, categories: [],
+  youtubeUrl: "", isPracticing: false, hasPitchWarning: false, categories: [], primaryTag: "",
 };
 
-function SongForm({ data, onChange, availableTags }: {
+function SongForm({ data, onChange, availableTags, availablePrimaryTags }: {
   data: FormData;
   onChange: (d: FormData) => void;
   availableTags: string[];
+  availablePrimaryTags: string[];
 }) {
   return (
     <div className="grid gap-4">
@@ -150,8 +152,24 @@ function SongForm({ data, onChange, availableTags }: {
         <Label className="text-sm font-medium text-[#4B5563]">YouTube 網址 <span className="text-[#6B7280] font-normal text-xs">（選填）</span></Label>
         <Input value={data.youtubeUrl} onChange={e => onChange({...data, youtubeUrl: e.target.value})} placeholder="https://youtube.com/..." />
       </div>
-      <div className="grid gap-2">
-        <Label className="text-sm font-medium text-[#4B5563]">標籤</Label>
+      {availablePrimaryTags.length > 0 && (
+        <div className="grid gap-1.5">
+          <Label className="text-sm font-medium text-[#4B5563]">
+            主要分類 <span className="text-[#6B7280] font-normal text-xs">（單選，顯示於歌曲列表）</span>
+          </Label>
+          <Select value={data.primaryTag || "__none__"} onValueChange={v => onChange({...data, primaryTag: v === "__none__" ? "" : v})}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">— 不設定 —</SelectItem>
+              {availablePrimaryTags.map(tag => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      <div className="grid gap-1.5">
+        <Label className="text-sm font-medium text-[#4B5563]">
+          附加標籤 <span className="text-[#6B7280] font-normal text-xs">（可複選）</span>
+        </Label>
         <TagChips selected={data.categories} available={availableTags} onChange={tags => onChange({...data, categories: tags})} />
         {data.categories.length === 0 && <p className="text-xs text-[#6B7280]">點選標籤加入，或由 Google Sheet 匯入後自動建立</p>}
       </div>
@@ -189,6 +207,11 @@ export default function AdminSongs() {
     ...(songsData?.songs.flatMap(s => s.categories ?? []) ?? []),
   ])).filter(Boolean).sort();
 
+  const availablePrimaryTags = (categoriesData?.categories ?? [])
+    .filter(c => c.type !== "language")
+    .map(c => c.name)
+    .sort();
+
   const createSong = useCreateSong();
   const updateSong = useUpdateSong();
   const deleteSong = useDeleteSong();
@@ -206,7 +229,8 @@ export default function AdminSongs() {
         youtubeUrl: formData.youtubeUrl || null,
         isPracticing: formData.status.includes("修練"),
         hasPitchWarning: formData.categories.some(t => t.includes("破音")),
-      }
+        primaryTag: formData.primaryTag || null,
+      } as any
     }, {
       onSuccess: () => { toast.success("新增成功"); setIsCreateOpen(false); setFormData(defaultForm); invalidateSongs(); },
       onError: () => toast.error("新增失敗"),
@@ -224,6 +248,7 @@ export default function AdminSongs() {
       isPracticing: song.isPracticing,
       hasPitchWarning: song.hasPitchWarning,
       categories: song.categories || [],
+      primaryTag: song.primaryTag || "",
     });
     setIsEditOpen(true);
   };
@@ -238,7 +263,8 @@ export default function AdminSongs() {
         youtubeUrl: formData.youtubeUrl || null,
         isPracticing: formData.status.includes("修練"),
         hasPitchWarning: formData.categories.some(t => t.includes("破音")),
-      }
+        primaryTag: formData.primaryTag || null,
+      } as any
     }, {
       onSuccess: () => { toast.success("更新成功"); setIsEditOpen(false); setFormData(defaultForm); setEditingSongId(null); invalidateSongs(); },
       onError: () => toast.error("更新失敗"),
@@ -306,6 +332,7 @@ export default function AdminSongs() {
           isPracticing: true,
           hasPitchWarning: false,
           categories: [],
+          primaryTag: "",
         });
         setQaStep("form");
       },
@@ -324,7 +351,8 @@ export default function AdminSongs() {
         youtubeUrl: qaForm.youtubeUrl || null,
         isPracticing: qaForm.status.includes("修練"),
         hasPitchWarning: qaForm.categories.some(t => t.includes("破音")),
-      }
+        primaryTag: qaForm.primaryTag || null,
+      } as any
     }, {
       onSuccess: () => {
         toast.success(`「${qaForm.title}」新增成功 🎵`);
@@ -456,7 +484,7 @@ export default function AdminSongs() {
                   <DialogTitle className="text-[#243447]">手動新增歌曲</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
-                  <SongForm data={formData} onChange={setFormData} availableTags={availableTags} />
+                  <SongForm data={formData} onChange={setFormData} availableTags={availableTags} availablePrimaryTags={availablePrimaryTags} />
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setIsCreateOpen(false)}>取消</Button>
@@ -564,7 +592,7 @@ export default function AdminSongs() {
             <DialogTitle className="text-[#243447]">編輯歌曲</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <SongForm data={formData} onChange={setFormData} availableTags={availableTags} />
+            <SongForm data={formData} onChange={setFormData} availableTags={availableTags} availablePrimaryTags={availablePrimaryTags} />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsEditOpen(false)}>取消</Button>

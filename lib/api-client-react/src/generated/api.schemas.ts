@@ -162,6 +162,8 @@ export interface Settings {
   /** @nullable */
   siteSubtitle?: string | null;
   /** @nullable */
+  siteUrl?: string | null;
+  /** @nullable */
   bannerText?: string | null;
   obsKeyEnabled: boolean;
   testMode: boolean;
@@ -173,6 +175,8 @@ export interface SettingsUpdate {
   siteName?: string;
   /** @nullable */
   siteSubtitle?: string | null;
+  /** @nullable */
+  siteUrl?: string | null;
   /** @nullable */
   bannerText?: string | null;
   /** @nullable */
