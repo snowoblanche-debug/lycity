@@ -12,14 +12,14 @@ export default function ObsLyrics() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    document.documentElement.classList.add("dark");
     document.documentElement.style.setProperty("background", "transparent", "important");
     document.body.style.setProperty("background", "transparent", "important");
-    
-    const fetchInterval = setInterval(() => {
-      refetch();
-    }, 2000);
-    
+
+    const fetchInterval = setInterval(() => refetch(), 2000);
+
     return () => {
+      document.documentElement.classList.remove("dark");
       document.documentElement.style.removeProperty("background");
       document.body.style.removeProperty("background");
       clearInterval(fetchInterval);
@@ -45,10 +45,9 @@ export default function ObsLyrics() {
     return null;
   }
 
-  // Parse LRC if format is lrc/krc
   const isLrc = data.lyricsFormat === "lrc" || data.lyricsFormat === "krc";
   let parsedLines: ParsedLine[] = [];
-  
+
   if (isLrc) {
     const lines = data.lyricsText.split("\n");
     for (const line of lines) {
@@ -61,8 +60,10 @@ export default function ObsLyrics() {
       }
     }
   } else {
-    // Plain text just split into pseudo-lines but without timing
-    parsedLines = data.lyricsText.split("\n").map((text, i) => ({ time: i * 5000, text: text.trim() })).filter(l => l.text);
+    parsedLines = data.lyricsText
+      .split("\n")
+      .map((text, i) => ({ time: i * 5000, text: text.trim() }))
+      .filter((l) => l.text);
   }
 
   let currentIndex = -1;
@@ -78,40 +79,46 @@ export default function ObsLyrics() {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-end p-8 pb-16 font-sans">
-      <div className="mb-4 bg-background/60 backdrop-blur-md px-6 py-2 rounded-full border border-border/50 text-center animate-in fade-in">
-        <div className="text-xl font-bold text-white shadow-sm">{data.song?.title}</div>
-        <div className="text-sm text-muted-foreground">{data.song?.artist}</div>
-      </div>
-      
-      <div 
-        ref={containerRef}
-        className="w-full max-w-4xl h-[200px] relative overflow-hidden flex flex-col items-center justify-center mask-image-y"
-        style={{
-          maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)"
-        }}
+      <div
+        className="mb-4 backdrop-blur-md px-6 py-2 rounded-full text-center animate-in fade-in"
+        style={{ background: "rgba(30,38,50,0.70)", border: "1px solid rgba(255,255,255,0.10)" }}
       >
-        <div 
+        <div className="text-xl font-bold text-white">{data.song?.title}</div>
+        <div className="text-sm text-white/50">{data.song?.artist}</div>
+      </div>
+
+      <div
+        ref={containerRef}
+        className="w-full max-w-4xl h-[200px] relative overflow-hidden flex flex-col items-center justify-center"
+        style={{ maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)" }}
+      >
+        <div
           className="absolute w-full transition-transform duration-500 ease-out flex flex-col items-center"
-          style={{
-            transform: `translateY(calc(50% - ${currentIndex * 40 + 20}px))`
-          }}
+          style={{ transform: `translateY(calc(50% - ${currentIndex * 40 + 20}px))` }}
         >
           {parsedLines.map((line, idx) => {
             const isCurrent = idx === currentIndex;
             const isPast = idx < currentIndex;
-            
+
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`h-[40px] flex items-center justify-center text-center transition-all duration-300 ${
-                  isCurrent 
-                    ? "text-4xl font-bold text-primary text-shadow-glow scale-110" 
-                    : isPast 
-                      ? "text-2xl text-white/50" 
-                      : "text-2xl text-white/30"
+                  isCurrent
+                    ? "text-4xl font-bold scale-110"
+                    : isPast
+                      ? "text-2xl"
+                      : "text-2xl"
                 }`}
                 style={{
-                  textShadow: isCurrent ? "0 0 10px hsl(var(--primary) / 0.5)" : "0 2px 4px rgba(0,0,0,0.8)"
+                  color: isCurrent
+                    ? "hsl(212 22% 54%)"
+                    : isPast
+                      ? "rgba(255,255,255,0.45)"
+                      : "rgba(255,255,255,0.25)",
+                  textShadow: isCurrent
+                    ? "0 0 10px rgba(112,136,163,0.6)"
+                    : "0 2px 4px rgba(0,0,0,0.8)",
                 }}
               >
                 {line.text}

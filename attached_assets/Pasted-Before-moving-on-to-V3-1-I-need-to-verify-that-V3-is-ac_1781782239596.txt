@@ -1,0 +1,117 @@
+Before moving on to V3.1, I need to verify that V3 is actually working and visually matches the intended design.
+
+At the moment, V3 cannot be previewed properly from my side, so please focus on fixing V3 accessibility and verification first.
+
+Please provide the following:
+
+### 1. V3 Preview Access
+
+The V3 preview currently cannot be opened.
+
+Please verify:
+
+* Is `/v3` actually being served?
+* Is the V3 build output being generated successfully?
+* Is the API server correctly serving the V3 static files?
+* What is the exact URL for the V3 preview?
+
+Please provide the working URL and a screenshot proving it loads.
+
+---
+
+### 2. V2 vs V3 Comparison
+
+Once V3 is accessible, provide side-by-side screenshots of:
+
+* V2 homepage
+* V3 homepage
+
+Including:
+
+* Hero banner
+* Branding (LY.city)
+* Subtitle
+* Song cards
+* Queue section
+
+I want to confirm that V3 visually matches V2 while keeping the new functionality.
+
+---
+
+### 3. Primary Tag Verification
+
+Please demonstrate one song that contains:
+
+Status:
+
+* 修練中 / 高完成度 / 招牌曲 etc.
+
+Primary Tag:
+
+* 抒情
+
+Secondary Tags:
+
+* EMO
+* 神曲
+
+Provide screenshots of:
+
+* Song Management page
+* Song Edit Dialog
+* Homepage card rendering
+
+I need to confirm that Status, Primary Tag, and Secondary Tags are three separate concepts.
+
+---
+
+### 4. Queue State Machine Verification
+
+Please demonstrate the complete workflow:
+
+waiting
+→ start
+→ playing
+→ complete
+→ history
+
+Provide screenshots for each step.
+
+I want to verify that:
+
+* started_at is recorded
+* completed_at is recorded
+* history entry is created
+* statistics update correctly
+
+---
+
+### 5. OBS Verification
+
+Please provide screenshots for:
+
+* `/v3/obs`
+* `/v3/obs-lyrics`
+
+And verify:
+
+* transparent background
+* current song display
+* next song display
+* lyric synchronization
+
+---
+
+### Important
+
+Do not continue with new V3 features yet.
+
+Priority order:
+
+1. Fix V3 preview accessibility
+2. Verify V3 UI
+3. Verify queue workflow
+4. Verify OBS pages
+5. Only then continue feature development
+
+I want V3 to reach V2-level stability before adding more functionality.
