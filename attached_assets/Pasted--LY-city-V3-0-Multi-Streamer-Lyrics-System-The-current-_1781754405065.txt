@@ -1,0 +1,369 @@
+# LY.city V3.0 - Multi Streamer & Lyrics System
+
+The current system is working well for a single streamer.
+
+I now want to evolve LY.city into a platform that can be shared with multiple VTubers and streamers.
+
+The goal is:
+
+* Easy to learn
+* Easy to maintain
+* Streamer-first workflow
+* OBS integration
+* Multi-user support
+
+---
+
+# PRIORITY 1 — LRC / Dynamic Lyrics System
+
+## Goal
+
+Allow streamers to display synchronized lyrics in OBS.
+
+---
+
+## Song Database
+
+Add fields:
+
+songs
+
+* lyrics_text
+* lyrics_source
+* lyrics_updated_at
+
+---
+
+## Lyrics Search
+
+Add button:
+
+🔍 Search Lyrics
+
+Workflow:
+
+Song Title + Artist
+↓
+Search online lyrics providers
+↓
+Preview lyrics
+↓
+Import into database
+
+Examples:
+
+Aimer カタオモイ
+
+SHE Ring Ring Ring
+
+鄧紫棋 光年之外
+
+---
+
+## Supported Formats
+
+LRC
+
+KRC
+
+YRC
+
+Plain text
+
+Store original format.
+
+---
+
+## Lyrics Editor
+
+Admin should be able to:
+
+* Edit lyrics manually
+* Replace lyrics
+* Remove lyrics
+
+---
+
+## OBS Lyrics Overlay
+
+Create:
+
+/obs/lyrics
+
+Display:
+
+Current Song
+
+Current Line
+
+Previous Line
+
+Next Line
+
+Future compatibility:
+
+KTV-style highlighting
+
+Do not implement highlighting yet.
+
+Only prepare architecture.
+
+---
+
+# PRIORITY 2 — Multi Streamer Accounts
+
+Current system:
+
+ADMIN_PASSWORD
+
+This is not scalable.
+
+---
+
+## User Management
+
+Create:
+
+users
+
+roles
+
+streamers
+
+tables.
+
+---
+
+## Roles
+
+Admin
+
+Streamer
+
+Editor
+
+---
+
+## Permissions
+
+Admin:
+
+* Everything
+
+Streamer:
+
+* Own songs
+* Own queue
+* Own OBS
+* Own statistics
+
+Editor:
+
+* Song management only
+
+---
+
+## Admin Panel
+
+Create:
+
+Admin → User Management
+
+Features:
+
+* Create user
+* Reset password
+* Disable account
+* Assign role
+* Assign streamer
+
+---
+
+## Login
+
+Support:
+
+Email + Password
+
+Keep current password login as fallback.
+
+Prepare architecture for:
+
+Google Login
+
+Discord Login
+
+Do not implement OAuth yet.
+
+---
+
+# PRIORITY 3 — Streamer Invitation System
+
+Admin can create:
+
+Invitation Link
+
+Example:
+
+https://ly.city/invite/xxxxx
+
+Workflow:
+
+Invite
+↓
+Set Password
+↓
+Choose Display Name
+↓
+Account Created
+
+---
+
+# PRIORITY 4 — Song Cooldown System
+
+Many streamers do not want the same song repeatedly requested.
+
+Add:
+
+cooldown_days
+
+per song.
+
+Examples:
+
+0 days
+
+7 days
+
+14 days
+
+30 days
+
+---
+
+When requesting:
+
+If still in cooldown:
+
+Show warning.
+
+Do NOT block by default.
+
+Admin chooses:
+
+Allow
+or
+Block
+
+---
+
+# PRIORITY 5 — Song Request Notes
+
+Add:
+
+request_note
+
+Examples:
+
+生日快樂
+
+送給織雪
+
+100天紀念
+
+---
+
+OBS can display:
+
+Song
+Requester
+Message
+
+---
+
+# PRIORITY 6 — Song Library Sharing
+
+Allow streamers to share song collections.
+
+Example:
+
+Aimer Collection
+
+Anime Collection
+
+Chinese Collection
+
+Seasonal Collection
+
+---
+
+Workflow:
+
+Create Collection
+↓
+Share
+↓
+Other Streamer Imports
+
+---
+
+# PRIORITY 7 — Requester Profiles
+
+Current leaderboard is good.
+
+Expand it.
+
+Click requester:
+
+123
+
+Show:
+
+Total Requests
+
+Favorite Songs
+
+Most Requested Tags
+
+Recent Requests
+
+---
+
+No login required.
+
+Requester identity remains name-based.
+
+---
+
+# PRODUCT DIRECTION
+
+LY.city should become:
+
+VTuber / Streamer Song Request Platform
+
+Core Features:
+
+* Song Library
+* Queue Management
+* OBS Overlay
+* Dynamic Lyrics
+* Streamer Statistics
+* Multi Streamer Accounts
+
+---
+
+# IMPORTANT
+
+Before implementing V3:
+
+Please show:
+
+1. Database schema changes
+2. New tables
+3. Permission model
+4. Migration plan
+5. UI mockups/screenshots
+
+before making large-scale changes.
+
+I want to review architecture first.
