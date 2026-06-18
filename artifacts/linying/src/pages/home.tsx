@@ -21,13 +21,21 @@ import { Label } from "@/components/ui/label";
 import { Search, Play, Music, Youtube, AlertCircle, ListOrdered, Mic2 } from "lucide-react";
 import { toast } from "sonner";
 
+function statusStyle(status: string): React.CSSProperties {
+  if (status.includes("修練中"))   return { background: "rgba(234,179,8,0.13)",   color: "#92610a", border: "1px solid rgba(234,179,8,0.30)" };
+  if (status.includes("高完成度")) return { background: "rgba(59,130,246,0.11)",  color: "#1e40af", border: "1px solid rgba(59,130,246,0.30)" };
+  if (status.includes("招牌曲"))   return { background: "rgba(139,92,246,0.11)",  color: "#6b21a8", border: "1px solid rgba(139,92,246,0.30)" };
+  if (status.includes("季節限定")) return { background: "rgba(20,184,166,0.11)",  color: "#0f766e", border: "1px solid rgba(20,184,166,0.28)" };
+  return { background: "rgba(107,114,128,0.09)", color: "#374151", border: "1px solid rgba(107,114,128,0.22)" };
+}
+
 function StatusBadge({ status, tags }: { status?: string; tags?: string[] }) {
   const hasPitch = tags?.some(t => t.includes("破音"));
   return (
     <span className="flex items-center gap-1 flex-wrap">
       {status && status !== "已解鎖" && (
         <span className="inline-flex items-center text-[11px] px-1.5 py-0.5 rounded-md font-medium"
-          style={{ background: "rgba(234,179,8,0.12)", color: "#92610a", border: "1px solid rgba(234,179,8,0.28)" }}>
+          style={statusStyle(status)}>
           {status}
         </span>
       )}

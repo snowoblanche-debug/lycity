@@ -1,0 +1,393 @@
+V2.2 Streamer Experience & Usability Improvements
+
+The system is functional, but several important streamer-facing features are still incomplete.
+
+This phase should focus on:
+
+Better streamer workflow
+Better readability
+Better requester analytics
+Better song organization
+Better admin experience
+ISSUE 1 — LY.city Branding Verification
+
+The system reports that branding was changed to:
+
+LY.city
+
+However screenshots still show:
+
+聆櫻聖境的點歌旋律
+
+and the deployment URL still appears as:
+
+https://ge-dan-hui-liu--snowoblanche.replit.app
+
+Please verify:
+
+A. Site Branding
+
+Check every page:
+
+Homepage
+Login
+Admin Dashboard
+OBS Overlay
+Browser Title
+OpenGraph Metadata
+
+Expected:
+
+LY.city
+
+Subtitle:
+
+千羽織雪 Oriyuki｜歌回點歌系統
+B. Deployment URL
+
+Explain clearly:
+
+Current deployment URL
+Custom domain support
+How LY.city can become the production domain
+
+Do not only change display text.
+
+ISSUE 2 — LOGIN / LOGOUT UX
+
+Current experience is confusing.
+
+When not logged in:
+
+Navbar should show:
+
+首頁
+演唱紀錄
+登入
+
+When logged in:
+
+首頁
+演唱紀錄
+管理後台
+登出
+
+Requirements:
+
+Add Logout Button
+
+Visible everywhere while authenticated.
+
+Add Current Login Status
+
+Example:
+
+已登入管理員
+
+or
+
+管理員模式
+ISSUE 3 — REQUESTER STATISTICS PAGE
+
+I requested requester analytics previously.
+
+Please verify it actually exists.
+
+Required page:
+
+/admin/requester-stats
+
+Display:
+
+點歌者	點歌次數
+David	98
+Toast	52
+Snow	33
+
+Clicking a requester should show:
+
+David
+
+Ring Ring Ring
+受協
+雪Distance
+...
+
+Track:
+
+Total Requests
+Unique Songs Requested
+Most Requested Songs
+Last Request Time
+ISSUE 4 — TEXT CONTRAST STILL TOO LOW
+
+Several pages still have poor readability.
+
+Examples:
+
+Category Management
+Song History
+Song Management
+Dashboard
+
+Requirements:
+
+Primary Text:
+
+color: #243447;
+font-weight: 700;
+
+Secondary Text:
+
+color: #4B5563;
+
+Muted Text:
+
+color: #6B7280;
+
+Rules:
+
+Never use opacity below 80%
+WCAG AA contrast minimum
+Readability over aesthetics
+ISSUE 5 — STATUS COLORS NEED CLEAR DIFFERENTIATION
+
+Current statuses are visually too similar.
+
+Please redesign:
+
+🐣修練中
+Yellow
+🎤高完成度
+Blue
+👑招牌曲
+Purple
+❄️季節限定
+Teal
+⚠️破音警告
+Red
+
+Goal:
+
+Streamer can identify song readiness instantly.
+
+ISSUE 6 — PRIMARY TAG + SECONDARY TAG SYSTEM
+
+Current tags are flat.
+
+I want:
+
+Primary Tag
+
+Only one allowed.
+
+Examples:
+
+抒情
+動漫
+EMO
+神曲
+季節
+Secondary Tags
+
+Multiple allowed.
+
+Examples:
+
+外文
+RAP
+冬
+夏
+神曲
+破音警告
+
+Song Example:
+
+受協
+
+Primary:
+抒情
+
+Secondary:
+EMO
+神曲
+
+Homepage:
+
+Show only primary tag.
+
+Edit page:
+
+Show full tag editor.
+
+ISSUE 7 — REQUESTER TRACKING DESIGN
+
+Do NOT require user accounts.
+
+Preferred workflow:
+
+Viewer enters:
+
+夕雨
+章魚貓
+吐司
+
+when requesting songs.
+
+Store requester name only.
+
+No login required.
+
+Track:
+
+Request Count
+Requested Songs
+Last Request Time
+Top Requesters
+ISSUE 8 — TEST MODE
+
+I specifically requested Test Mode.
+
+Please verify implementation.
+
+Requirements:
+
+Admin Settings:
+
+測試模式
+
+When enabled:
+
+Queue actions
+Do not create history
+Do not affect statistics
+Do not affect sing_count
+
+Visible banner:
+
+目前為測試模式，所有操作不計入統計
+ISSUE 9 — REBUILD STATISTICS
+
+I requested a rebuild tool.
+
+Please verify implementation.
+
+Admin Settings:
+
+重新計算統計
+
+Behavior:
+
+Delete calculated statistics.
+
+Rebuild entirely from:
+
+song_history
+
+Use song_history as source of truth.
+
+ISSUE 10 — SONG MANAGEMENT QUALITY OF LIFE
+
+Add:
+
+Recently Performed
+
+Example:
+
+最近30分鐘唱過
+
+Display recent songs.
+
+Prevent accidental repeats.
+
+Favorites
+
+Allow streamer bookmarks:
+
+⭐ 招牌歌
+⭐ 必唱
+⭐ 高人氣
+
+Quick filter.
+
+Song Cooldown
+
+Optional setting:
+
+同一首歌
+60分鐘內不可重複點播
+
+Useful for long singing streams.
+
+ISSUE 11 — YOUTUBE PARSER IMPROVEMENT
+
+Current parsing is still weak.
+
+Example title:
+
+不是花火呀 - Ring Ring Ring (原唱：SHE)「拉長耳朵提高警覺，神經細胞全面戒備」【動態歌詞】
+
+Current result:
+
+Ring Ring Ring 「拉長耳朵...
+
+Expected:
+
+Ring Ring Ring
+
+Please improve Auto Clean.
+
+Remove:
+
+原唱
+Cover
+Lyrics
+動態歌詞
+Official Video
+MV
+Karaoke
+Full Ver
+中文翻譯
+日文翻譯
+pinyin
+「...」
+【...】
+(...) metadata
+
+Goal:
+
+Streamer can add a song within 5–10 seconds.
+
+AFTER IMPLEMENTATION
+
+Please provide:
+
+Updated Database Schema
+songs
+tags
+song_tags
+queue
+song_history
+requester_stats
+settings
+Screenshots
+
+Show:
+
+Homepage
+Login
+Admin Dashboard
+Requester Statistics
+Song Management
+Test Mode
+Rebuild Statistics
+Verification Checklist
+
+For each feature:
+
+✅ Completed
+❌ Not Completed
+
+Do not summarize only.
+
+Show actual implementation results and screenshots.

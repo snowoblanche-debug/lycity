@@ -26,22 +26,41 @@ import { Plus, Search, Edit2, Trash2, DownloadCloud, AlertCircle, RefreshCw, Zap
 const LANGUAGES = ["中文", "日文", "英文", "韓文", "小語種"];
 const STATUSES = ["已解鎖", "🐣修練中", "👑招牌曲", "🎤高完成度", "❄️季節限定"];
 
-// Client-side title cleaner (mirrors backend logic)
+// Client-side title cleaner — strips metadata and extracts clean song title
 function cleanTitle(title: string): string {
   let t = title;
-  t = t.replace(/[【（(\[【][^】）)\]]*(?:Cover|Lyrics|動態歌詞|Official\s*(?:Video|MV|Audio)|MV|Karaoke|カラオケ|翻唱|原唱|伴奏|歌詞)[^】）)\]]*[】）)\]]/gi, "");
-  const patterns: RegExp[] = [
-    /[\s\-–|｜]+(?:Official\s+)?(?:Music\s+Video|Video|MV|Audio)$/gi,
+  // 1. Remove 「...」 and 【...】 bracketed content entirely
+  t = t.replace(/「[^」]*」/g, "");
+  t = t.replace(/【[^】]*】/g, "");
+  // 2. Remove (...) / （...） containing metadata keywords
+  const metaKw = "原唱|Cover|Lyrics|動態歌詞|Official|MV|Full\\s*Ver|中文翻譯|日文翻譯|pinyin|Karaoke|カラオケ|翻唱|伴奏|歌詞|Subtitles?";
+  t = t.replace(new RegExp(`（[^）]*(${metaKw})[^）]*）`, "gi"), "");
+  t = t.replace(new RegExp(`\\([^)]*(${metaKw})[^)]*\\)`, "gi"), "");
+  // 3. Remove trailing suffix metadata after separators
+  const suffixes: RegExp[] = [
+    /[\s\-–|｜]+(?:Official\s+)?(?:Music\s+Video|Lyric\s*Video|Video|MV|Audio)$/gi,
     /[\s\-–|｜]+Lyrics?$/gi,
     /[\s\-–|｜]+動態歌詞$/g,
+    /[\s\-–|｜]+歌詞$/g,
     /[\s\-–|｜]+Cover$/gi,
     /[\s\-–|｜]+Karaoke$/gi,
+    /[\s\-–|｜]+カラオケ$/g,
     /[\s\-–|｜]+原唱$/g,
     /[\s\-–|｜]+翻唱$/g,
     /[\s\-–|｜]+伴奏$/g,
-    /[\s\-–|｜]+歌詞$/g,
+    /[\s\-–|｜]+Full\s*(?:Ver(?:sion)?)?$/gi,
+    /[\s\-–|｜]+中文(?:翻譯|版)?$/g,
+    /[\s\-–|｜]+日文(?:翻譯|版)?$/g,
+    /[\s\-–|｜]+pinyin$/gi,
+    /[\s\-–|｜]+(?:English\s+)?Subtitles?$/gi,
   ];
-  for (const p of patterns) t = t.replace(p, "");
+  for (const p of suffixes) t = t.replace(p, "");
+  // 4. Handle "Artist - Title" format: keep the rightmost segment after " - "
+  //    (common YouTube pattern: "不是花火呀 - Ring Ring Ring")
+  const dashParts = t.split(/\s+-\s+/);
+  if (dashParts.length >= 2) {
+    t = dashParts[dashParts.length - 1];
+  }
   return t.trim();
 }
 
@@ -316,18 +335,29 @@ export default function AdminSongs() {
     });
   };
 
+  function statusChipStyle(status: string): React.CSSProperties {
+    if (status.includes("修練中"))   return { background: "rgba(234,179,8,0.13)",  color: "#92610a", border: "1px solid rgba(234,179,8,0.30)" };
+    if (status.includes("高完成度")) return { background: "rgba(59,130,246,0.11)", color: "#1e40af", border: "1px solid rgba(59,130,246,0.30)" };
+    if (status.includes("招牌曲"))   return { background: "rgba(139,92,246,0.11)", color: "#6b21a8", border: "1px solid rgba(139,92,246,0.30)" };
+    if (status.includes("季節限定")) return { background: "rgba(20,184,166,0.11)", color: "#0f766e", border: "1px solid rgba(20,184,166,0.28)" };
+    return { background: "rgba(107,114,128,0.09)", color: "#374151", border: "1px solid rgba(107,114,128,0.22)" };
+  }
+
   const StatusCell = ({ song }: { song: any }) => {
     const status = song.status || (song.isPracticing ? "🐣修練中" : "已解鎖");
     const hasPitch = song.categories?.some((t: string) => t.includes("破音")) || song.hasPitchWarning;
     return (
       <div className="flex gap-1 flex-wrap">
         {status !== "已解鎖" && (
-          <Badge variant="outline" className="text-xs border-amber-400/50 text-amber-700 bg-amber-50">{status}</Badge>
+          <span className="inline-flex items-center text-[11px] px-1.5 py-0.5 rounded-md font-medium" style={statusChipStyle(status)}>
+            {status}
+          </span>
         )}
         {hasPitch && (
-          <Badge variant="outline" className="text-xs border-red-400/50 text-red-700 bg-red-50 flex items-center gap-0.5">
+          <span className="inline-flex items-center gap-0.5 text-[11px] px-1.5 py-0.5 rounded-md font-medium"
+            style={{ background: "rgba(239,68,68,0.09)", color: "#b91c1c", border: "1px solid rgba(239,68,68,0.22)" }}>
             <AlertCircle className="w-2.5 h-2.5" />破音
-          </Badge>
+          </span>
         )}
         {status === "已解鎖" && !hasPitch && (
           <span className="text-xs text-[#6B7280]">已解鎖</span>
